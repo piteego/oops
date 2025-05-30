@@ -5,24 +5,21 @@ import (
 	"slices"
 )
 
-type Identifier struct {
+type identifier struct {
 	Code  string
 	Error error
 }
 
-func New(custom Identifier, msg string, options ...ErrorOption) *Error {
-	e := &Error{
-		Custom: custom,
-		msg:    msg,
-	}
+func New(msg string, options ...option) *Error {
+	e := &Error{msg: msg}
 	for i := range options {
-		options[i](e)
+		options[i].apply(e)
 	}
 	return e
 }
 
 type Error struct {
-	Custom  Identifier
+	Custom  identifier
 	msg     string
 	wrapper error
 }
@@ -38,7 +35,7 @@ func (x *Error) Unwrap() error {
 		return nil
 
 	case errors.Unwrap(x.wrapper) != x.Custom.Error:
-		// CausedBy called with non-nil parent error...
+		// CausedBy applied with non-nil parent error...
 		return errors.Join(x.Custom.Error, x.wrapper)
 
 	default:

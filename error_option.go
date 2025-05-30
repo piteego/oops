@@ -1,12 +1,24 @@
 package oops
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type ErrorOption func(*Error)
+type option interface{ apply(*Error) }
 
-func CausedBy(parent error) ErrorOption {
-	return func(e *Error) {
-		// TODO: implement a general Custom formatter for the client
-		e.wrapper = fmt.Errorf("%v caused by (%w)", e.wrapper, parent)
+type CausedBy struct{ Parent error }
+
+func (opt CausedBy) apply(err *Error) {
+	if opt.Parent == nil {
+		return
+	}
+	if err.wrapper != nil {
+		err.wrapper = fmt.Errorf("%s caused by (%w)", err.wrapper, opt.Parent)
+	} else {
+		err.wrapper = fmt.Errorf("%s caused by (%w)", err.msg, opt.Parent)
 	}
 }
+
+type Custom = identifier
+
+func (opt Custom) apply(err *Error) { err.Custom = opt }

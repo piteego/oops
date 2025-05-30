@@ -8,18 +8,18 @@ import (
 )
 
 var (
-	Internal       = oops.Identifier{Code: "Internal", Error: errors.New("internal error")}
-	NotFound       = oops.Identifier{Code: "NotFound", Error: errors.New("not found")}
-	Invalid        = oops.Identifier{Code: "Invalid", Error: errors.New("invalid input")}
-	NotImplemented = oops.Identifier{Code: "NotImplemented", Error: errors.New("not implemented")}
-	Unauthorized   = oops.Identifier{Code: "Unauthorized", Error: errors.New("unauthorized access")}
-	Forbidden      = oops.Identifier{Code: "Forbidden", Error: errors.New("forbidden access")}
-	Unprocessable  = oops.Identifier{Code: "Unprocessable", Error: errors.New("unprocessable")}
-	inputs         = []input{
+	Internal      = oops.Custom{Code: "Internal", Error: errors.New("internal error")}
+	Unauthorized  = oops.Custom{Code: "Unauthorized", Error: errors.New("unauthorized access")}
+	Unimplemented = oops.Custom{Code: "Unimplemented", Error: errors.New("not implemented")}
+	Invalid       = oops.Custom{Code: "Invalid", Error: errors.New("invalid input")}
+	Forbidden     = oops.Custom{Code: "Forbidden", Error: errors.New("forbidden access")}
+	NotFound      = oops.Custom{Code: "NotFound", Error: errors.New("not found error")}
+	Unprocessable = oops.Custom{Code: "Unprocessable", Error: errors.New("unprocessable")}
+	inputs        = []input{
 		{Internal, "An internal error occurred"},
+		{Unimplemented, "This feature is not implemented"},
 		{NotFound, "The requested resource was not found"},
 		{Invalid, "The input provided is invalid"},
-		{NotImplemented, "This feature is not implemented"},
 		{Unauthorized, "You are not authorized to perform this action"},
 		{Forbidden, "Access to this resource is forbidden"},
 		{Unprocessable, "The request could not be processed"},
@@ -27,7 +27,7 @@ var (
 )
 
 type input struct {
-	custom oops.Identifier
+	custom oops.Custom
 	msg    string
 }
 
@@ -43,9 +43,9 @@ func TestNew(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.custom, tc.msg)
+			got := oops.New(tc.msg, tc.custom)
 			if got == nil {
-				t.Fatalf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.custom.Code, tc.custom.Error, got)
+				t.Errorf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.custom.Code, tc.custom.Error, got)
 			}
 			if got.Error() != tc.msg {
 				t.Errorf("oops.Error.Error() must lead to the client msg %q, got %q", tc.msg, got.Error())
@@ -58,22 +58,27 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+	t.Log("oops.New(msg string, options ...option) in brief:")
+	t.Log(" - oops.New never returns nil")
+	t.Log(" - oops.New(msg).Error() leads to the client msg")
+	t.Log(" - Printing oops.New(msg) with fmt.Sprintf leads to the client msg")
+	t.Log(" - Comparing oops.New(msg, custom) with client custom identifier's Error using errors.Is() leads to true")
 }
 
-func TestNewCausedBy(t *testing.T) {
+func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 	parent := errors.New("parent error")
 	testCases := make([]struct {
 		name string
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = fmt.Sprintf("New%sCausedByParentError", inputs[i].custom.Code)
+		testCases[i].name = inputs[i].custom.Code
 		testCases[i].custom = inputs[i].custom
 		testCases[i].msg = inputs[i].msg
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.custom, tc.msg, oops.CausedBy(parent))
+			got := oops.New(tc.msg, tc.custom, oops.CausedBy{Parent: parent})
 			if !errors.Is(got, parent) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
@@ -81,25 +86,47 @@ func TestNewCausedBy(t *testing.T) {
 	}
 }
 
-func TestNewIsClientCustomError(t *testing.T) {
-	got := oops.New(NotFound, "The requested resource was not found")
+func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
+	got := oops.New("The requested resource was not found", NotFound)
 	if !errors.Is(got, NotFound.Error) {
 		t.Errorf("Comparing oops.Error with client custom error using errors.Is() must lead to true, got false")
 	}
 }
 
-func TestNewIsRootCauseError(t *testing.T) {
+func TestNew_IsRootCauseError(t *testing.T) {
 	parent := errors.New("parent error")
-	got := oops.New(Internal, "An internal error occurred", oops.CausedBy(parent))
+	got := oops.New("An internal error occurred", Internal, oops.CausedBy{Parent: parent})
 	if !errors.Is(got, parent) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
 }
 
+func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
+	process := func() error {
+		lowLevelNotFound := oops.New("The requested resource was not found",
+			NotFound, oops.CausedBy{Parent: errors.New("a low-level error")},
+		)
+		return oops.New("Unprocessable entity",
+			oops.CausedBy{Parent: lowLevelNotFound},
+			Internal,
+		)
+	}
+	got := process()
+	var oopsErr *oops.Error
+	if !errors.As(got, &oopsErr) {
+		t.Errorf("expected *oops.Error, got %T", got)
+	}
+	t.Logf("Successfully parsed process() error %q as oops.Error.Debug(3):", got)
+	for _, err := range oopsErr.Debug(10) {
+		t.Logf(" - %s", err)
+	}
+	t.Log(len(oopsErr.Debug(3)))
+}
+
 func TestBuiltinErrorAsOopsError(t *testing.T) {
 	process := func() error {
-		return oops.New(Internal, "Something went wrong",
-			oops.CausedBy(errors.New("a low-level error")),
+		return oops.New("Something went wrong", Internal,
+			oops.CausedBy{Parent: errors.New("a low-level error")},
 		)
 	}
 	got := process()
