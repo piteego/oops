@@ -5,6 +5,8 @@ import (
 	"slices"
 )
 
+var Oops = identifier{Code: "Oops!", Error: errors.New("something went wrong")}
+
 type identifier struct {
 	Code  string
 	Error error
@@ -15,8 +17,11 @@ func New(msg string, options ...option) *Error {
 	for i := range options {
 		options[i].apply(err)
 	}
+	if err.Custom.Error == nil {
+		err.Custom = Oops
+	}
 	if err.wrapper == nil {
-		err.wrapper = errors.New(msg)
+		CausedBy{Parent: err}.apply(err)
 	}
 	return err
 }

@@ -138,7 +138,8 @@ func TestBuiltinErrorAsOopsError(t *testing.T) {
 
 func TestError_Debug(t *testing.T) {
 	// TODO: need to be improved
-	mainIssue := errors.New("main issue")
-	got := oops.New("The request is unprocessable", Unprocessable, oops.CausedBy{Parent: mainIssue})
+	//mainIssue := errors.New("main issue")
+	got := oops.New("The request is unprocessable") //Unprocessable, oops.CausedBy{Parent: mainIssue},
+
 	t.Logf("%+q", got.Debug(2))
 }
