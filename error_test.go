@@ -37,7 +37,7 @@ func TestNew(t *testing.T) {
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Code
+		testCases[i].name = inputs[i].custom.Code.String()
 		testCases[i].custom = inputs[i].custom
 		testCases[i].msg = inputs[i].msg
 	}
@@ -72,7 +72,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Code
+		testCases[i].name = inputs[i].custom.Code.String()
 		testCases[i].custom = inputs[i].custom
 		testCases[i].msg = inputs[i].msg
 	}

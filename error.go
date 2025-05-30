@@ -5,13 +5,6 @@ import (
 	"slices"
 )
 
-var Oops = identifier{Code: "Oops!", Error: errors.New("something went wrong")}
-
-type identifier struct {
-	Code  string
-	Error error
-}
-
 func New(msg string, options ...option) *Error {
 	err := &Error{msg: msg}
 	for i := range options {
