@@ -117,10 +117,9 @@ func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
 	t.Logf("Successfully parsed process() error %q as oops.Error.Debug(3):", got)
-	for _, err := range oopsErr.Debug(10) {
+	for _, err := range oopsErr.Debug(3) {
 		t.Logf(" - %s", err)
 	}
-	t.Log(len(oopsErr.Debug(3)))
 }
 
 func TestBuiltinErrorAsOopsError(t *testing.T) {
@@ -135,4 +134,11 @@ func TestBuiltinErrorAsOopsError(t *testing.T) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
 	t.Logf("Successfully parsed process() error %q as oops.Error.Debug(2) %q", got, oopsErr.Debug(2))
+}
+
+func TestError_Debug(t *testing.T) {
+	// TODO: need to be improved
+	mainIssue := errors.New("main issue")
+	got := oops.New("The request is unprocessable", Unprocessable, oops.CausedBy{Parent: mainIssue})
+	t.Logf("%+q", got.Debug(2))
 }

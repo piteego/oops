@@ -11,11 +11,14 @@ type identifier struct {
 }
 
 func New(msg string, options ...option) *Error {
-	e := &Error{msg: msg}
+	err := &Error{msg: msg}
 	for i := range options {
-		options[i].apply(e)
+		options[i].apply(err)
 	}
-	return e
+	if err.wrapper == nil {
+		err.wrapper = errors.New(msg)
+	}
+	return err
 }
 
 type Error struct {
@@ -39,7 +42,7 @@ func (x *Error) Unwrap() error {
 		return errors.Join(x.Custom.Error, x.wrapper)
 
 	default:
-		// New called without calling CausedBy, or called CausedBy(nil)
+		// New called without CausedBy, or called CausedBy(nil)
 		return x.wrapper
 	}
 }
@@ -49,10 +52,12 @@ func (x *Error) Debug(depth int) []error {
 		return nil
 	}
 	if depth <= 0 {
-		panic("[Oops!] debug depth must be positive")
+		panic("Oops! debug depth must be positive")
 	}
-	debug := make([]error, 1, depth)
-	debug[0] = x.Custom.Error
+	debug := make([]error, 0, depth)
+	if x.Custom.Error != nil {
+		debug = append(debug, x.Custom.Error)
+	}
 	next := errors.Unwrap(x.wrapper)
 	if next == x.Custom.Error || depth == 1 {
 		return debug
