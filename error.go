@@ -5,24 +5,21 @@ import (
 	"slices"
 )
 
-func New(msg string, options ...option) *Error {
+func New(msg string, options ...ErrorOption) *Error {
 	err := &Error{msg: msg}
 	for i := range options {
 		options[i].apply(err)
 	}
-	if err.Custom.Error == nil {
-		err.Custom = Oops
-	}
-	if err.wrapper == nil {
-		CausedBy{Parent: err}.apply(err)
+	if err.Category.Error == nil {
+		err.Category = Unknown
 	}
 	return err
 }
 
 type Error struct {
-	Custom  identifier
-	msg     string
-	wrapper error
+	Category category
+	msg      string
+	wrapper  error // TODO: fmt.Errorf("[%d][%w]::%q", code.Index(), code.Err(), msg)
 }
 
 // Error implements golang's builtin error interface. It returns the client's message of the Error.
@@ -35,9 +32,9 @@ func (x *Error) Unwrap() error {
 	case x == nil:
 		return nil
 
-	case errors.Unwrap(x.wrapper) != x.Custom.Error:
+	case errors.Unwrap(x.wrapper) != x.Category.Error:
 		// CausedBy applied with non-nil parent error...
-		return errors.Join(x.Custom.Error, x.wrapper)
+		return errors.Join(x.Category.Error, x.wrapper)
 
 	default:
 		// New called without CausedBy, or called CausedBy(nil)
@@ -53,11 +50,11 @@ func (x *Error) Debug(depth int) []error {
 		panic("Oops! debug depth must be positive")
 	}
 	debug := make([]error, 0, depth)
-	if x.Custom.Error != nil {
-		debug = append(debug, x.Custom.Error)
+	if x.Category.Error != nil {
+		debug = append(debug, x.Category.Error)
 	}
 	next := errors.Unwrap(x.wrapper)
-	if next == x.Custom.Error || depth == 1 {
+	if next == x.Category.Error || depth == 1 {
 		return debug
 	}
 	for next != nil && len(debug) <= depth {

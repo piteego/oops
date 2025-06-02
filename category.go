@@ -2,11 +2,11 @@ package oops
 
 import "errors"
 
-var Oops = identifier{Code: "Oops!", Error: errors.New("something went wrong")}
+var Unknown = category{Code: "Unknown", Error: errors.New("unknown category")}
 
 type (
-	code       string
-	identifier struct {
+	code     string
+	category struct {
 		Code  code
 		Error error
 	}

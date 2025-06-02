@@ -4,21 +4,23 @@ import (
 	"fmt"
 )
 
-type option interface{ apply(*Error) }
+type ErrorOption interface{ apply(*Error) }
 
-type CausedBy struct{ Parent error }
+type causedBy struct{ parent error }
 
-func (opt CausedBy) apply(err *Error) {
-	if opt.Parent == nil {
+func (opt causedBy) apply(err *Error) {
+	if opt.parent == nil {
 		return
 	}
 	if err.wrapper != nil {
-		err.wrapper = fmt.Errorf("%s caused by (%w)", err.wrapper, opt.Parent)
+		err.wrapper = fmt.Errorf("%s caused by (%w)", err.wrapper, opt.parent)
 	} else {
-		err.wrapper = fmt.Errorf("%s caused by (%w)", err.msg, opt.Parent)
+		err.wrapper = fmt.Errorf("%s caused by (%w)", err.msg, opt.parent)
 	}
 }
 
-type Custom = identifier
+func CausedBy(parent error) ErrorOption { return causedBy{parent} }
 
-func (opt Custom) apply(err *Error) { err.Custom = opt }
+type Custom = category
+
+func (opt Custom) apply(err *Error) { err.Category = opt }

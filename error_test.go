@@ -62,7 +62,7 @@ func TestNew(t *testing.T) {
 	t.Log(" - oops.New never returns nil")
 	t.Log(" - oops.New(msg).Error() leads to the client msg")
 	t.Log(" - Printing oops.New(msg) with fmt.Sprintf leads to the client msg")
-	t.Log(" - Comparing oops.New(msg, custom) with client custom identifier's Error using errors.Is() leads to true")
+	t.Log(" - Comparing oops.New(msg, custom) with client custom category's Error using errors.Is() leads to true")
 }
 
 func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
@@ -78,7 +78,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, tc.custom, oops.CausedBy{Parent: parent})
+			got := oops.New(tc.msg, tc.custom, oops.CausedBy(parent))
 			if !errors.Is(got, parent) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
@@ -95,7 +95,7 @@ func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
 
 func TestNew_IsRootCauseError(t *testing.T) {
 	parent := errors.New("parent error")
-	got := oops.New("An internal error occurred", Internal, oops.CausedBy{Parent: parent})
+	got := oops.New("An internal error occurred", Internal, oops.CausedBy(parent))
 	if !errors.Is(got, parent) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
@@ -104,10 +104,10 @@ func TestNew_IsRootCauseError(t *testing.T) {
 func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 	process := func() error {
 		lowLevelNotFound := oops.New("The requested resource was not found",
-			NotFound, oops.CausedBy{Parent: errors.New("a low-level error")},
+			NotFound, oops.CausedBy(errors.New("a low-level error")),
 		)
 		return oops.New("Unprocessable entity",
-			oops.CausedBy{Parent: lowLevelNotFound},
+			oops.CausedBy(lowLevelNotFound),
 			Internal,
 		)
 	}
@@ -124,8 +124,8 @@ func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 
 func TestBuiltinErrorAsOopsError(t *testing.T) {
 	process := func() error {
-		return oops.New("Something went wrong", Internal,
-			oops.CausedBy{Parent: errors.New("a low-level error")},
+		return oops.New("Something went wrong",
+			Internal, oops.CausedBy(errors.New("a low-level error")),
 		)
 	}
 	got := process()
