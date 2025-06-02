@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	Internal      = oops.Custom{Code: "Internal", Error: errors.New("internal error")}
-	Unauthorized  = oops.Custom{Code: "Unauthorized", Error: errors.New("unauthorized access")}
-	Unimplemented = oops.Custom{Code: "Unimplemented", Error: errors.New("not implemented")}
-	Invalid       = oops.Custom{Code: "Invalid", Error: errors.New("invalid input")}
-	Forbidden     = oops.Custom{Code: "Forbidden", Error: errors.New("forbidden access")}
-	NotFound      = oops.Custom{Code: "NotFound", Error: errors.New("not found error")}
-	Unprocessable = oops.Custom{Code: "Unprocessable", Error: errors.New("unprocessable")}
+	Internal      = oops.Category{Id: "Internal", Error: errors.New("internal error")}
+	Unauthorized  = oops.Category{Id: "Unauthorized", Error: errors.New("unauthorized access")}
+	Unimplemented = oops.Category{Id: "Unimplemented", Error: errors.New("not implemented")}
+	Invalid       = oops.Category{Id: "Invalid", Error: errors.New("invalid input")}
+	Forbidden     = oops.Category{Id: "Forbidden", Error: errors.New("forbidden access")}
+	NotFound      = oops.Category{Id: "NotFound", Error: errors.New("not found error")}
+	Unprocessable = oops.Category{Id: "Unprocessable", Error: errors.New("unprocessable")}
 	inputs        = []input{
 		{Internal, "An internal error occurred"},
 		{Unimplemented, "This feature is not implemented"},
@@ -27,7 +27,7 @@ var (
 )
 
 type input struct {
-	custom oops.Custom
+	custom oops.Category
 	msg    string
 }
 
@@ -37,7 +37,7 @@ func TestNew(t *testing.T) {
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Code.String()
+		testCases[i].name = inputs[i].custom.Id.String()
 		testCases[i].custom = inputs[i].custom
 		testCases[i].msg = inputs[i].msg
 	}
@@ -45,7 +45,7 @@ func TestNew(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := oops.New(tc.msg, tc.custom)
 			if got == nil {
-				t.Errorf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.custom.Code, tc.custom.Error, got)
+				t.Errorf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.custom.Id, tc.custom.Error, got)
 			}
 			if got.Error() != tc.msg {
 				t.Errorf("oops.Error.Error() must lead to the client msg %q, got %q", tc.msg, got.Error())
@@ -66,20 +66,20 @@ func TestNew(t *testing.T) {
 }
 
 func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
-	parent := errors.New("parent error")
+	cause := errors.New("cause error")
 	testCases := make([]struct {
 		name string
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Code.String()
+		testCases[i].name = inputs[i].custom.Id.String()
 		testCases[i].custom = inputs[i].custom
 		testCases[i].msg = inputs[i].msg
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, tc.custom, oops.CausedBy(parent))
-			if !errors.Is(got, parent) {
+			got := oops.New(tc.msg, tc.custom, oops.CausedBy(cause))
+			if !errors.Is(got, cause) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
 		})
@@ -94,9 +94,9 @@ func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
 }
 
 func TestNew_IsRootCauseError(t *testing.T) {
-	parent := errors.New("parent error")
-	got := oops.New("An internal error occurred", Internal, oops.CausedBy(parent))
-	if !errors.Is(got, parent) {
+	cause := errors.New("cause error")
+	got := oops.New("An internal error occurred", Internal, oops.CausedBy(cause))
+	if !errors.Is(got, cause) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
 }
@@ -138,8 +138,11 @@ func TestBuiltinErrorAsOopsError(t *testing.T) {
 
 func TestError_Debug(t *testing.T) {
 	// TODO: need to be improved
-	//mainIssue := errors.New("main issue")
-	got := oops.New("The request is unprocessable") //Unprocessable, oops.CausedBy{Parent: mainIssue},
-
-	t.Logf("%+q", got.Debug(2))
+	mainIssue := errors.New("main issue")
+	got := oops.New("The request is unprocessable", Unprocessable, oops.CausedBy(mainIssue))
+	var oopsErr *oops.Error
+	if !errors.As(got, &oopsErr) {
+		t.Errorf("expected *oops.Error, got %T", got)
+	}
+	t.Logf("%+q", oopsErr.Debug(2))
 }

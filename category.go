@@ -2,14 +2,13 @@ package oops
 
 import "errors"
 
-var Unknown = category{Code: "Unknown", Error: errors.New("unknown category")}
+var Unknown = category{Id: "Unknown", Error: errors.New("unknown error category")}
 
-type (
-	code     string
-	category struct {
-		Code  code
-		Error error
-	}
-)
+type category struct {
+	Id    id
+	Error error
+}
 
-func (c code) String() string { return string(c) }
+type id string
+
+func (c id) String() string { return string(c) }

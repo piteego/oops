@@ -6,21 +6,27 @@ import (
 
 type ErrorOption interface{ apply(*Error) }
 
-type causedBy struct{ parent error }
+type causedBy struct{ cause error }
 
 func (opt causedBy) apply(err *Error) {
-	if opt.parent == nil {
+	if opt.cause == nil {
 		return
 	}
 	if err.wrapper != nil {
-		err.wrapper = fmt.Errorf("%s caused by (%w)", err.wrapper, opt.parent)
+		err.wrapper = fmt.Errorf("%w ==> %s", opt.cause, err.wrapper)
 	} else {
-		err.wrapper = fmt.Errorf("%s caused by (%w)", err.msg, opt.parent)
+		err.wrapper = fmt.Errorf("%w ==> ", opt.cause)
 	}
 }
 
-func CausedBy(parent error) ErrorOption { return causedBy{parent} }
+func CausedBy(cause error) ErrorOption { return causedBy{cause} }
 
-type Custom = category
+type Category = category
 
-func (opt Custom) apply(err *Error) { err.Category = opt }
+func (opt Category) apply(err *Error) {
+	if err.Category.Error != nil {
+		// Do not overwrite existing category
+		return
+	}
+	err.Category = opt
+}

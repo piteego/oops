@@ -5,12 +5,12 @@ import (
 	"slices"
 )
 
-func New(msg string, options ...ErrorOption) *Error {
+func New(msg string, options ...ErrorOption) error {
 	err := &Error{msg: msg}
 	for i := range options {
 		options[i].apply(err)
 	}
-	if err.Category.Error == nil {
+	if err.Category == (category{}) {
 		err.Category = Unknown
 	}
 	return err
@@ -19,7 +19,7 @@ func New(msg string, options ...ErrorOption) *Error {
 type Error struct {
 	Category category
 	msg      string
-	wrapper  error // TODO: fmt.Errorf("[%d][%w]::%q", code.Index(), code.Err(), msg)
+	wrapper  error
 }
 
 // Error implements golang's builtin error interface. It returns the client's message of the Error.
@@ -33,7 +33,7 @@ func (x *Error) Unwrap() error {
 		return nil
 
 	case errors.Unwrap(x.wrapper) != x.Category.Error:
-		// CausedBy applied with non-nil parent error...
+		// CausedBy applied with non-nil cause error...
 		return errors.Join(x.Category.Error, x.wrapper)
 
 	default:
