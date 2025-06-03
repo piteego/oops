@@ -12,19 +12,20 @@ func Tag(custom Label) ErrorOption {
 	}
 }
 
-func CausedBy(errs ...error) ErrorOption {
+func CausedBy(stack ...error) ErrorOption {
 	return func(err *Error) {
-		if len(errs) == 0 {
+		if len(stack) == 0 {
 			return
 		}
-		for i := range errs {
-			if errs[i] != nil {
-				err.causes = append(err.causes, errs[i])
+		// TODO: improve allocation by adding new capacity to err.stack based on the number of non-nil stack errors.
+		for i := range stack {
+			if stack[i] != nil {
+				err.stack = append(err.stack, stack[i])
 			}
 		}
-		if len(err.causes) < cap(err.causes) {
+		if len(err.stack) < cap(err.stack) {
 			// clip the slice
-			err.causes = err.causes[:len(err.causes):len(err.causes)]
+			err.stack = err.stack[:len(err.stack):len(err.stack)]
 		}
 	}
 }

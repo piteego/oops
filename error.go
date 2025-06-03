@@ -25,8 +25,8 @@ func New(msg string, options ...ErrorOption) error {
 
 type Error struct {
 	Label
-	msg    string
-	causes []error
+	msg   string
+	stack []error
 }
 
 // Error implements golang's builtin error interface. It returns the client's message given in the New function.
@@ -34,4 +34,4 @@ func (err *Error) Error() string { return err.msg }
 
 // Unwrap returns the wrapped errors, to allow interoperability with
 // errors.Is(), errors.As() and errors.Unwrap()
-func (err *Error) Unwrap() []error { return err.causes }
+func (err *Error) Unwrap() []error { return err.stack }
