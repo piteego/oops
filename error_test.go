@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	Internal      = oops.Category{Id: "Internal", Error: errors.New("internal error")}
-	Unauthorized  = oops.Category{Id: "Unauthorized", Error: errors.New("unauthorized access")}
-	Unimplemented = oops.Category{Id: "Unimplemented", Error: errors.New("not implemented")}
-	Invalid       = oops.Category{Id: "Invalid", Error: errors.New("invalid input")}
-	Forbidden     = oops.Category{Id: "Forbidden", Error: errors.New("forbidden access")}
-	NotFound      = oops.Category{Id: "NotFound", Error: errors.New("not found error")}
-	Unprocessable = oops.Category{Id: "Unprocessable", Error: errors.New("unprocessable")}
+	Internal      = oops.Label{Id: "Internal", Error: errors.New("internal error")}
+	Unauthorized  = oops.Label{Id: "Unauthorized", Error: errors.New("unauthorized access")}
+	Unimplemented = oops.Label{Id: "Unimplemented", Error: errors.New("not implemented")}
+	Invalid       = oops.Label{Id: "Invalid", Error: errors.New("invalid input")}
+	Forbidden     = oops.Label{Id: "Forbidden", Error: errors.New("forbidden access")}
+	NotFound      = oops.Label{Id: "NotFound", Error: errors.New("not found error")}
+	Unprocessable = oops.Label{Id: "Unprocessable", Error: errors.New("unprocessable")}
 	inputs        = []input{
 		{Internal, "An internal error occurred"},
 		{Unimplemented, "This feature is not implemented"},
@@ -27,8 +27,8 @@ var (
 )
 
 type input struct {
-	custom oops.Category
-	msg    string
+	label oops.Label
+	msg   string
 }
 
 func TestNew(t *testing.T) {
@@ -37,15 +37,15 @@ func TestNew(t *testing.T) {
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Id.String()
-		testCases[i].custom = inputs[i].custom
+		testCases[i].name = inputs[i].label.Id
+		testCases[i].label = inputs[i].label
 		testCases[i].msg = inputs[i].msg
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, tc.custom)
+			got := oops.New(tc.msg, oops.Tag(tc.label))
 			if got == nil {
-				t.Errorf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.custom.Id, tc.custom.Error, got)
+				t.Errorf("oops.New() never returns nil: expected %T {%s, %v}, got %v", &oops.Error{}, tc.label.Id, tc.label.Error, got)
 			}
 			if got.Error() != tc.msg {
 				t.Errorf("oops.Error.Error() must lead to the client msg %q, got %q", tc.msg, got.Error())
@@ -53,7 +53,8 @@ func TestNew(t *testing.T) {
 			if fmt.Sprintf("%v", got) != tc.msg {
 				t.Errorf("Printing oops.Error with fmt.Sprintf must lead to the client msg %q, got %q", tc.msg, fmt.Sprintf("%v", got))
 			}
-			if !errors.Is(got, tc.custom.Error) {
+			if !errors.Is(got, tc.label.Error) {
+				t.Logf("##### got.(*oops.Error).Unwrap(): %v", got.(*oops.Error).Unwrap())
 				t.Errorf("Comparing oops.Error with client custom error using errors.Is() must lead to true, got false")
 			}
 		})
@@ -72,13 +73,13 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 		input
 	}, len(inputs))
 	for i := range inputs {
-		testCases[i].name = inputs[i].custom.Id.String()
-		testCases[i].custom = inputs[i].custom
+		testCases[i].name = inputs[i].label.Id
+		testCases[i].label = inputs[i].label
 		testCases[i].msg = inputs[i].msg
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, tc.custom, oops.CausedBy(cause))
+			got := oops.New(tc.msg, oops.Tag(tc.label), oops.CausedBy(cause))
 			if !errors.Is(got, cause) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
@@ -87,7 +88,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 }
 
 func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
-	got := oops.New("The requested resource was not found", NotFound)
+	got := oops.New("The requested resource was not found", oops.Tag(NotFound))
 	if !errors.Is(got, NotFound.Error) {
 		t.Errorf("Comparing oops.Error with client custom error using errors.Is() must lead to true, got false")
 	}
@@ -95,7 +96,7 @@ func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
 
 func TestNew_IsRootCauseError(t *testing.T) {
 	cause := errors.New("cause error")
-	got := oops.New("An internal error occurred", Internal, oops.CausedBy(cause))
+	got := oops.New("An internal error occurred", oops.Tag(Internal), oops.CausedBy(cause))
 	if !errors.Is(got, cause) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
@@ -104,11 +105,11 @@ func TestNew_IsRootCauseError(t *testing.T) {
 func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 	process := func() error {
 		lowLevelNotFound := oops.New("The requested resource was not found",
-			NotFound, oops.CausedBy(errors.New("a low-level error")),
+			oops.Tag(NotFound), oops.CausedBy(errors.New("a low-level error")),
 		)
 		return oops.New("Unprocessable entity",
 			oops.CausedBy(lowLevelNotFound),
-			Internal,
+			oops.Tag(Internal),
 		)
 	}
 	got := process()
@@ -116,16 +117,16 @@ func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
-	t.Logf("Successfully parsed process() error %q as oops.Error.Debug(3):", got)
-	for _, err := range oopsErr.Debug(3) {
+	t.Logf("Successfully parsed process() error %q as oops.Error.Unwrap():", got)
+	for _, err := range oopsErr.Unwrap() {
 		t.Logf(" - %s", err)
 	}
 }
 
-func TestBuiltinErrorAsOopsError(t *testing.T) {
+func TestBuiltinErrorsAsOopsError(t *testing.T) {
 	process := func() error {
 		return oops.New("Something went wrong",
-			Internal, oops.CausedBy(errors.New("a low-level error")),
+			oops.Tag(Internal), oops.CausedBy(errors.New("a low-level error")),
 		)
 	}
 	got := process()
@@ -133,16 +134,18 @@ func TestBuiltinErrorAsOopsError(t *testing.T) {
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
-	t.Logf("Successfully parsed process() error %q as oops.Error.Debug(2) %q", got, oopsErr.Debug(2))
+	t.Logf("Successfully parsed process() error %q as oops.Error %+v", got, oopsErr)
 }
 
-func TestError_Debug(t *testing.T) {
+func TestError_Unwrap(t *testing.T) {
 	// TODO: need to be improved
 	mainIssue := errors.New("main issue")
-	got := oops.New("The request is unprocessable", Unprocessable, oops.CausedBy(mainIssue))
+	got := oops.New("The request is unprocessable",
+		oops.Tag(Unprocessable), oops.CausedBy(mainIssue),
+	)
 	var oopsErr *oops.Error
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
-	t.Logf("%+q", oopsErr.Debug(2))
+	t.Logf("%+q", oopsErr.Unwrap())
 }

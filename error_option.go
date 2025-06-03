@@ -1,32 +1,30 @@
 package oops
 
-import (
-	"fmt"
-)
+type ErrorOption func(*Error)
 
-type ErrorOption interface{ apply(*Error) }
-
-type causedBy struct{ cause error }
-
-func (opt causedBy) apply(err *Error) {
-	if opt.cause == nil {
-		return
-	}
-	if err.wrapper != nil {
-		err.wrapper = fmt.Errorf("%w ==> %s", opt.cause, err.wrapper)
-	} else {
-		err.wrapper = fmt.Errorf("%w ==> ", opt.cause)
+func Tag(custom Label) ErrorOption {
+	return func(err *Error) {
+		if err.Label.Error != nil {
+			// Do not overwrite existing category
+			return
+		}
+		err.Label = custom
 	}
 }
 
-func CausedBy(cause error) ErrorOption { return causedBy{cause} }
-
-type Category = category
-
-func (opt Category) apply(err *Error) {
-	if err.Category.Error != nil {
-		// Do not overwrite existing category
-		return
+func CausedBy(errs ...error) ErrorOption {
+	return func(err *Error) {
+		if len(errs) == 0 {
+			return
+		}
+		for i := range errs {
+			if errs[i] != nil {
+				err.causes = append(err.causes, errs[i])
+			}
+		}
+		if len(err.causes) < cap(err.causes) {
+			// clip the slice
+			err.causes = err.causes[:len(err.causes):len(err.causes)]
+		}
 	}
-	err.Category = opt
 }
