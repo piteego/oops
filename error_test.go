@@ -8,20 +8,20 @@ import (
 )
 
 var (
-	Internal      = oops.Label{Id: "Internal", Error: errors.New("internal error")}
-	Unauthorized  = oops.Label{Id: "Unauthorized", Error: errors.New("unauthorized access")}
-	Unimplemented = oops.Label{Id: "Unimplemented", Error: errors.New("not implemented")}
-	Invalid       = oops.Label{Id: "Invalid", Error: errors.New("invalid input")}
+	Internal      = oops.Label{Id: "Internal", Error: errors.New("something went wrong")}
+	NotFound      = oops.Label{Id: "NotFound", Error: errors.New("resource not found")}
 	Forbidden     = oops.Label{Id: "Forbidden", Error: errors.New("forbidden access")}
-	NotFound      = oops.Label{Id: "NotFound", Error: errors.New("not found error")}
-	Unprocessable = oops.Label{Id: "Unprocessable", Error: errors.New("unprocessable")}
+	Validation    = oops.Label{Id: "Validation", Error: errors.New("invalid input")}
+	Unauthorized  = oops.Label{Id: "Unauthorized", Error: errors.New("unauthorized access")}
+	Unimplemented = oops.Label{Id: "Unimplemented", Error: errors.New("not implemented yet")}
+	Unprocessable = oops.Label{Id: "Unprocessable", Error: errors.New("the request is unprocessable")}
 	inputs        = []input{
 		{Internal, "An internal error occurred"},
-		{Unimplemented, "This feature is not implemented"},
 		{NotFound, "The requested resource was not found"},
-		{Invalid, "The input provided is invalid"},
-		{Unauthorized, "You are not authorized to perform this action"},
 		{Forbidden, "Access to this resource is forbidden"},
+		{Validation, "The input provided is invalid"},
+		{Unauthorized, "You are not authorized to perform this action"},
+		{Unimplemented, "This feature is not implemented"},
 		{Unprocessable, "The request could not be processed"},
 	}
 )
