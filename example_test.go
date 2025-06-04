@@ -26,6 +26,15 @@ func ExampleLabel() {
 	fmt.Println(ErrUnauthorized)
 	fmt.Println(ErrUnimplemented)
 	fmt.Println(ErrUnprocessable)
+	// Output:
+	// something went wrong
+	// resource not found
+	// forbidden access
+	// invalid input
+	// duplicate entry
+	// unauthorized access
+	// not implemented yet
+	// the request is unprocessable
 }
 
 func ExampleNew_withNoOptions() {
@@ -68,7 +77,7 @@ func ExampleNew_causedByStackErrors() {
 		return []error{ErrProcessFailed, a2iErr}
 	}
 	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.CausedBy(failedProcess()...),
+		oops.Because(failedProcess()...),
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -94,7 +103,7 @@ func ExampleError_Unwrap() {
 	customLabel := oops.Label(errors.New("custom error label"))
 	err := oops.New("emit macho dwarf: elf header corrupted",
 		oops.Tag(customLabel),
-		oops.CausedBy(
+		oops.Because(
 			errors.New("cause error 1"),
 			errors.New("cause error 2"),
 		),
@@ -123,13 +132,13 @@ func ExampleTag() {
 	// false
 }
 
-func ExampleCausedBy() {
+func ExampleBecause() {
 	reasons := []error{
 		errors.New("cause error 1"),
 		errors.New("cause error 2"),
 	}
 	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.CausedBy(
+		oops.Because(
 			reasons..., // multiple causes are merged into a single oops.Error's stack trace
 		),
 	)
@@ -203,12 +212,12 @@ func ExampleHandler_asVariable() {
 			return nil
 		}
 		if errors.Is(err, err1) {
-			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.CausedBy(err1)).(*oops.Error)
+			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.Because(err1)).(*oops.Error)
 		}
 		if errors.Is(err, err2) {
-			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.CausedBy(err2)).(*oops.Error)
+			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.Because(err2)).(*oops.Error)
 		}
-		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.CausedBy(err)).(*oops.Error)
+		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.Because(err)).(*oops.Error)
 	}
 	oopsErr := handle(err1)
 	fmt.Println(oopsErr)
@@ -227,12 +236,12 @@ func ExampleHandle() {
 			return nil
 		}
 		if errors.Is(err, err1) {
-			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.CausedBy(err1)).(*oops.Error)
+			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.Because(err1)).(*oops.Error)
 		}
 		if errors.Is(err, err2) {
-			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.CausedBy(err2)).(*oops.Error)
+			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.Because(err2)).(*oops.Error)
 		}
-		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.CausedBy(err)).(*oops.Error)
+		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.Because(err)).(*oops.Error)
 	}
 
 	fmt.Println(oops.Handle(err1, handler))

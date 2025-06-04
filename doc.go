@@ -16,9 +16,9 @@
 // - Flexible Error Options:
 //
 // [ErrorOption] is a function that modifies an [Error] instance, allowing you to set options like
-// tagging the error with a [Label] or adding a stack trace with [CausedBy].
+// tagging the error with a [Label] or adding a stack trace with [Because].
 //
-// - Stack Traces: Use [CausedBy] in [New] function to append stack traces to your errors, providing valuable context for debugging.
+// - Stack Traces: Use [Because] in [New] function to append stack traces to your errors, providing valuable context for debugging.
 //
 // - Structured Error Handling:
 //

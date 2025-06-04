@@ -11,7 +11,7 @@ type Label error
 
 // New creates a new *[Error] and return builtin error interface
 // with the given message and list of [ErrorOption].
-// You can use optional [ErrorOption] (e.g, [CausedBy] to benefit stack trace,
+// You can use optional [ErrorOption] (e.g, [Because] to benefit stack trace,
 // or [Tag] a [Label] to categorize your application errors)
 func New(msg string, options ...ErrorOption) error {
 	err := Error{msg: msg}
@@ -23,7 +23,7 @@ func New(msg string, options ...ErrorOption) error {
 		err.Label = Untagged
 	}
 	// append the label to the stack trace
-	CausedBy(err.Label)(&err)
+	Because(err.Label)(&err)
 	return &err
 }
 

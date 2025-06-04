@@ -18,7 +18,7 @@ func Handle(err error, handlers ...Handler) error {
 		for i := range handlers {
 			if handlers[i] != nil {
 				if oopsErr := handlers[i](err); oopsErr != nil {
-					CausedBy(err)(oopsErr)
+					Because(err)(oopsErr)
 					return oopsErr
 				}
 			}

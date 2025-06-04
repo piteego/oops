@@ -55,7 +55,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 	cause := errors.New("cause error")
 	for _, tc := range commonTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, oops.Tag(tc.label), oops.CausedBy(cause))
+			got := oops.New(tc.msg, oops.Tag(tc.label), oops.Because(cause))
 			if !errors.Is(got, cause) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
@@ -72,7 +72,7 @@ func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
 
 func TestNew_IsRootCauseError(t *testing.T) {
 	cause := errors.New("cause error")
-	got := oops.New("An internal error occurred", oops.Tag(example.Internal.Error), oops.CausedBy(cause))
+	got := oops.New("An internal error occurred", oops.Tag(example.Internal.Error), oops.Because(cause))
 	if !errors.Is(got, cause) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
@@ -81,10 +81,10 @@ func TestNew_IsRootCauseError(t *testing.T) {
 func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 	process := func() error {
 		lowLevelNotFound := oops.New("The requested resource was not found",
-			oops.Tag(example.NotFound.Error), oops.CausedBy(errors.New("a low-level error")),
+			oops.Tag(example.NotFound.Error), oops.Because(errors.New("a low-level error")),
 		)
 		return oops.New("Unprocessable entity",
-			oops.CausedBy(lowLevelNotFound),
+			oops.Because(lowLevelNotFound),
 			oops.Tag(example.Internal.Error),
 		)
 	}
@@ -102,7 +102,7 @@ func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 func TestBuiltinErrorsAsOopsError(t *testing.T) {
 	process := func() error {
 		return oops.New("Something went wrong",
-			oops.Tag(example.Internal.Error), oops.CausedBy(errors.New("a low-level error")),
+			oops.Tag(example.Internal.Error), oops.Because(errors.New("a low-level error")),
 		)
 	}
 	got := process()
@@ -117,7 +117,7 @@ func TestError_Unwrap(t *testing.T) {
 	// TODO: need to be improved
 	mainIssue := errors.New("main issue")
 	got := oops.New("The request is unprocessable",
-		oops.Tag(example.Unprocessable.Error), oops.CausedBy(mainIssue),
+		oops.Tag(example.Unprocessable.Error), oops.Because(mainIssue),
 	)
 	var oopsErr *oops.Error
 	if !errors.As(got, &oopsErr) {
