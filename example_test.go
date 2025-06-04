@@ -152,7 +152,7 @@ func ExampleBecause() {
 		}
 	}
 	// Output:
-	// ["cause error 1" "cause error 2" "unknown error label"]
+	// ["cause error 1" "cause error 2" "untagged"]
 	// true
 	// true
 }
