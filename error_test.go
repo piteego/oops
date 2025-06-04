@@ -12,6 +12,7 @@ var (
 	NotFound      = oops.Label{Id: "NotFound", Error: errors.New("resource not found")}
 	Forbidden     = oops.Label{Id: "Forbidden", Error: errors.New("forbidden access")}
 	Validation    = oops.Label{Id: "Validation", Error: errors.New("invalid input")}
+	Duplication   = oops.Label{Id: "Duplication", Error: errors.New("duplicate entry")}
 	Unauthorized  = oops.Label{Id: "Unauthorized", Error: errors.New("unauthorized access")}
 	Unimplemented = oops.Label{Id: "Unimplemented", Error: errors.New("not implemented yet")}
 	Unprocessable = oops.Label{Id: "Unprocessable", Error: errors.New("the request is unprocessable")}

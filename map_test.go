@@ -8,8 +8,6 @@ import (
 )
 
 func TestMap_Handle(t *testing.T) {
-	gormErrRecordNotFound := errors.New("gorm record not found")
-	redisCacheMissed := errors.New("redis cache missed")
 	errMap := oops.Map{
 		os.ErrNotExist:        oops.New("file not exists", oops.Tag(NotFound)).(*oops.Error),
 		redisCacheMissed:      oops.New("cache key not found", oops.Tag(NotFound)).(*oops.Error),
