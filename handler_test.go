@@ -3,6 +3,7 @@ package oops_test
 import (
 	"errors"
 	"github.com/piteego/oops"
+	"github.com/piteego/oops/example"
 	"testing"
 )
 
@@ -18,19 +19,19 @@ func handleRepoErr(entity string) oops.Handler {
 			return nil
 		}
 		if errors.Is(err, redisCacheMissed) {
-			return oops.New(entity+" not found", oops.Tag(NotFound)).(*oops.Error)
+			return oops.New(entity+" not found", oops.Tag(example.NotFound.Error)).(*oops.Error)
 		}
 		if errors.Is(err, gormErrDuplicatedKey) {
-			return oops.New("duplicated "+entity, oops.Tag(Duplication)).(*oops.Error)
+			return oops.New("duplicated "+entity, oops.Tag(example.Duplication.Error)).(*oops.Error)
 		}
 		if errors.Is(err, gormErrRecordNotFound) {
-			return oops.New(entity+" not found", oops.Tag(NotFound)).(*oops.Error)
+			return oops.New(entity+" not found", oops.Tag(example.NotFound.Error)).(*oops.Error)
 		}
-		return oops.New("something went wrong", oops.Tag(Internal)).(*oops.Error)
+		return oops.New("something went wrong", oops.Tag(example.Internal.Error)).(*oops.Error)
 	}
 }
 
-func TestHandler(t *testing.T) {
+func TestHandle(t *testing.T) {
 	err := oops.Handle(nil)
 	if err != nil {
 		t.Errorf("expected nil, got %v", err)
@@ -42,9 +43,9 @@ func TestHandler(t *testing.T) {
 		expected *oops.Error
 	}{
 		{"nil error", nil, nil},
-		{"redis cache missed", redisCacheMissed, oops.New("entity not found", oops.Tag(NotFound)).(*oops.Error)},
-		{"gorm duplicated key", gormErrDuplicatedKey, oops.New("duplicated entity", oops.Tag(Duplication)).(*oops.Error)},
-		{"gorm record not found", gormErrRecordNotFound, oops.New("entity not found", oops.Tag(NotFound)).(*oops.Error)},
+		{"redis cache missed", redisCacheMissed, oops.New("entity not found", oops.Tag(example.NotFound.Error)).(*oops.Error)},
+		{"gorm duplicated key", gormErrDuplicatedKey, oops.New("duplicated entity", oops.Tag(example.Duplication.Error)).(*oops.Error)},
+		{"gorm record not found", gormErrRecordNotFound, oops.New("entity not found", oops.Tag(example.NotFound.Error)).(*oops.Error)},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -1,17 +1,22 @@
 package oops
 
+// ErrorOption is a function that modifies an [Error] instance.
+// It is used to set options like Tagging the error with a [Label] or
+// adding a stack trace with [CausedBy], etc.
 type ErrorOption func(*Error)
 
+// Tag sets a custom [Label] for the *[Error]. If the error already has a non-nil [Label], it will not overwrite it.
 func Tag(custom Label) ErrorOption {
 	return func(err *Error) {
-		if err.Label.Error != nil {
-			// Do not overwrite existing category
+		if err.Label != nil {
+			// Do not overwrite existing label
 			return
 		}
 		err.Label = custom
 	}
 }
 
+// CausedBy append stack errors to the *[Error] stack.
 func CausedBy(stack ...error) ErrorOption {
 	return func(err *Error) {
 		if len(stack) == 0 {
