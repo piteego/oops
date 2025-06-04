@@ -1,22 +1,35 @@
-// Package oops provides a simple error handling mechanism that allows you to
-// create, tag, and handle errors in a structured way.
+// Package oops offers a straightforward and structured approach to error handling in Go applications.
 //
-// You can start using it defining your own error categories using [Label] errors.
-// There are some examples in the [example] package that show an example of how to define custom error categories.
+// It enables you to create, categorize, and manage errors effectively using a system of labels and handlers.
 //
-// Having a well-defined labels allows you to categorize your application errors using [New] function as follows:
+// Key Features:
 //
-//	err := oops.New("failed to process", oops.Tag(example.Duplicated.Error))
+// - Categorize Errors with [Label]: Define custom error categories using [Label] error.
+// This allows you to classify application errors consistently.
+// Examples demonstrating how to define these custom categories can be found in the example package.
+//
+// - Create Labeled Errors: Use the [New] function to create new errors and associate them
+// with your predefined labels. For instance:
+//
+// err := oops.New("failed to process", oops.Tag(example.Duplicated.Error))
+//
+// - Flexible Error Options:
 //
 // [ErrorOption] is a function that modifies an [Error] instance, allowing you to set options like
 // tagging the error with a [Label] or adding a stack trace with [CausedBy].
 //
-// This will allow you to handle errors in upper layers of your application either by [errors.Is] as follows:
+// - Stack Traces: Use [CausedBy] in [New] function to append stack traces to your errors, providing valuable context for debugging.
 //
-//	if errors.Is(err, example.Duplicated.Error) {// You will be here!}
+// - Structured Error Handling:
 //
-// or by using the [Map] type to handle builtin errors in a more structured way.
+// -- [errors.Is]: Handle errors in higher layers of your application using [errors.Is] to check against specific labeled errors:
 //
-// Another option is to define more complicated [Handler](s) in different layers of your application and
-// use the [Handle] function to process a given error calling a series of handlers.
+//	if errors.Is(err, example.Duplicated.Error) { // You will be here! }
+//
+// -- [Map] Type: The [Map] type provides a structured way to handle builtin errors.
+// Just define a map of errors to their corresponding *[Error] instances, and use the Map.Handle method to process errors.
+// The [Handle] method will append the original error to the stack of the returned *[Error].
+//
+// -- Custom Handlers: Define complex [Handler] functions in different application layers.
+// The [Handle] function can then be used to process a given error by invoking a series of these custom handlers.
 package oops
