@@ -4,15 +4,14 @@ import (
 	"errors"
 	"github.com/piteego/oops"
 	"github.com/piteego/oops/example"
-	"os"
 	"testing"
 )
 
 func TestMap_Handle(t *testing.T) {
 	var errMap = oops.Map{
-		os.ErrNotExist:        oops.New("file not exists", oops.Tag(example.NotFound.Error)).(*oops.Error),
-		redisCacheMissed:      oops.New("cache key not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
-		gormErrRecordNotFound: oops.New("entity not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
+		example.OsErrNotExist:         oops.New("no such file or directory", oops.Tag(example.NotFound.Error)).(*oops.Error),
+		example.RedisCacheMissed:      oops.New("cache key not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
+		example.GormErrRecordNotFound: oops.New("entity not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
 	}
 	for err := range errMap {
 		t.Run(err.Error(), func(t *testing.T) {
@@ -26,10 +25,13 @@ func TestMap_Handle(t *testing.T) {
 		})
 	}
 	t.Run("duplicated map key", func(t *testing.T) {
-		errMap[os.ErrNotExist] = oops.New("file not exists_ duplicated!", oops.Tag(example.Internal.Error)).(*oops.Error)
-		t.Logf("error map with duplicated os.ErrNotExist key: %q", errMap[os.ErrNotExist])
-		got := errMap.Handle(os.ErrNotExist)
-		if !errors.Is(got, os.ErrNotExist) {
+		errMap[example.OsErrNotExist] = oops.New(
+			"no such file or directory__duplicated!",
+			oops.Tag(example.Internal.Error),
+		).(*oops.Error)
+		t.Logf("error map with duplicated example.OsErrNotExist key: %q", errMap[example.OsErrNotExist])
+		got := errMap.Handle(example.OsErrNotExist)
+		if !errors.Is(got, example.OsErrNotExist) {
 			t.Errorf("expected true, got false")
 		}
 		if errors.Is(got, example.NotFound.Error) {

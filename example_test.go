@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/piteego/oops"
 	"github.com/piteego/oops/example"
-	"os"
 	"strconv"
 )
 
@@ -158,45 +157,17 @@ func ExampleBecause() {
 }
 
 func ExampleMap() {
-	var errMap = oops.Map{
-		os.ErrNotExist:        oops.New("file not exists", oops.Tag(example.NotFound.Error)).(*oops.Error),
-		redisCacheMissed:      oops.New("cache key not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
-		gormErrRecordNotFound: oops.New("entity not found", oops.Tag(example.NotFound.Error)).(*oops.Error),
-	}
-	fmt.Println(errMap.Handle(os.ErrNotExist))
-	fmt.Println(errMap.Handle(errors.New("unhandled error")))
+	fmt.Println(example.ErrMap.Handle(example.RedisCacheMissed))
+	fmt.Println(example.ErrMap.Handle(errors.New("unhandled error")))
 	// Output:
-	// file not exists
+	// cache key not found
 	// unhandled error
 }
 
 func ExampleHandler_closure() {
-	// having
-	//var (
-	//	gormErrDuplicatedKey  = errors.New("gorm duplicated key")
-	//	gormErrRecordNotFound = errors.New("gorm record not found")
-	//	redisCacheMissed      = errors.New("redis cache missed")
-	//)
-	catchRepoErr := func(entity string) oops.Handler {
-		return func(err error) *oops.Error {
-			if err == nil {
-				return nil
-			}
-			if errors.Is(err, redisCacheMissed) {
-				return oops.New(entity+" not found", oops.Tag(example.NotFound.Error)).(*oops.Error)
-			}
-			if errors.Is(err, gormErrDuplicatedKey) {
-				return oops.New("duplicated "+entity, oops.Tag(example.Duplication.Error)).(*oops.Error)
-			}
-			if errors.Is(err, gormErrRecordNotFound) {
-				return oops.New(entity+" not found", oops.Tag(example.NotFound.Error)).(*oops.Error)
-			}
-			return oops.New("something went wrong", oops.Tag(example.Internal.Error)).(*oops.Error)
-		}
-	}
-	fmt.Println(catchRepoErr("user")(gormErrRecordNotFound))
-	fmt.Println(catchRepoErr("user")(redisCacheMissed))
-	fmt.Println(catchRepoErr("user")(errors.New("unhandled error")))
+	fmt.Println(example.HandleRepoErr("user")(example.GormErrRecordNotFound))
+	fmt.Println(example.HandleRepoErr("user")(example.RedisCacheMissed))
+	fmt.Println(example.HandleRepoErr("user")(errors.New("unhandled error")))
 	// Output:
 	// user not found
 	// user not found

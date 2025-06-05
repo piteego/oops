@@ -32,6 +32,7 @@ func TestNew(t *testing.T) {
 			if got == nil {
 				t.Errorf("oops.New() never returns nil, got nil")
 			}
+			_ = got.(*oops.Error) // ensure that got is of type *oops.Error
 			if got.Error() != tc.msg {
 				t.Errorf("oops.Error.Error() must lead to the client msg %q, got %q", tc.msg, got.Error())
 			}
@@ -46,9 +47,10 @@ func TestNew(t *testing.T) {
 	}
 	t.Log("oops.New(msg string, options ...option) in brief:")
 	t.Log(" - oops.New never returns nil")
+	t.Log(" - New() error is always of type *oops.Error")
 	t.Log(" - oops.New(msg).Error() leads to the client msg")
 	t.Log(" - Printing oops.New(msg) with fmt.Sprintf leads to the client msg")
-	t.Log(" - Comparing oops.New(msg, custom) with client custom category's Error using errors.Is() leads to true")
+	t.Log(" - Comparing oops.New(msg, oops.Tag(custom)) with client custom Label using errors.Is() leads to true")
 }
 
 func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
