@@ -1,4 +1,8 @@
 # oops: Structured Error Handling for Go Clean Architecture
+[![License](http://img.shields.io/:license-Apache_2.0-blue.svg)](LICENSE)
+[![GoDoc](https://godoc.org/github.com/piteego/oops)](https://godoc.org/github.com/piteego/oops)
+[![Coverage Status](https://coveralls.io/repos/github/piteego/oops/badge.svg?branch=main)](https://coveralls.io/github/piteego/oops?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/piteego/oops)](https://goreportcard.com/report/github.com/piteego/oops)
 
 **`oops`** provides a straightforward and structured approach to error handling specifically designed for Go applications adopting a clean architecture. It empowers you to create, categorize, and manage errors effectively using a system of labels and handlers, thereby offering enhanced debuggability, maintainability, and clear separation of concerns across your architectural layers. This approach respects the Dependency Rule, ensuring that inner, higher-level policy layers remain independent of outer, lower-level implementation details, thus preventing undesirable import cycles and promoting a robust, testable codebase.
 
