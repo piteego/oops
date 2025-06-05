@@ -1,6 +1,6 @@
 # oops: Structured Error Handling for Go Clean Architecture
 [![License](http://img.shields.io/:license-Apache_2.0-blue.svg)](LICENSE)
-[![GoDoc](https://godoc.org/github.com/piteego/oops)](https://godoc.org/github.com/piteego/oops)
+[![GoDoc](https://godoc.org/github.com/piteego/oops?status.svg)](https://godoc.org/github.com/piteego/oops)
 [![Coverage Status](https://coveralls.io/repos/github/piteego/oops/badge.svg?branch=main)](https://coveralls.io/github/piteego/oops?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/piteego/oops)](https://goreportcard.com/report/github.com/piteego/oops)
 
