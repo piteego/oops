@@ -43,6 +43,5 @@ type Error struct {
 // Error implements golang's builtin error interface. It returns the client's message given in the [New] function.
 func (err *Error) Error() string { return err.msg }
 
-// Unwrap returns the wrapped errors, to allow interoperability with
-// [errors.Is](), [errors.As]() and [errors.Unwrap]()
+// Unwrap returns the wrapped errors, to allow interoperability with [errors.Is](), [errors.As]()
 func (err *Error) Unwrap() []error { return err.stack }
