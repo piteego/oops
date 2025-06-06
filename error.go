@@ -20,7 +20,9 @@ type Label error
 func New(msg string, options ...ErrorOption) error {
 	err := Error{msg: msg}
 	for i := range options {
-		options[i](&err)
+		if options[i] != nil {
+			options[i](&err)
+		}
 	}
 	// If no label is set, use the default untagged label.
 	if err.Label == nil {
