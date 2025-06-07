@@ -1,44 +1,71 @@
 package v1
 
-func New(msg string, options ...option) error {
-	n := 0
-	for i := range options {
-		if options[i] != nil {
-			n++
-		}
-	}
-	if n == 0 {
-		return &basic{msg: msg}
-	}
-	err := Error{msg: msg, data: make(map[string]option, n)}
-	for i := range options {
-		var key string
-		switch options[i].(type) {
-		case label:
-			key = "_label"
-		case cause:
-			key = "_cause"
-		case causes:
-			key = "_causes"
-		case Diagnosis:
-			key = "_diagnosis"
-		case level:
-			key = "_level"
-		default:
-			key = "_custom"
-		}
+import "fmt"
 
-		if _, exist := err.data[key]; exist {
-			// skip duplicate keys
-			continue
+type metadata interface{ errorOption() }
+
+func New(msg string, options ...metadata) error {
+	var num struct{ internalOptions, externalOptions int }
+	for i := range options {
+		switch options[i].(type) {
+		case Tag, Because, Diagnosis:
+			num.internalOptions++
+		default:
+			num.externalOptions++
 		}
-		if options[i] == nil {
-			// skip options with nil value
-			continue
-		}
-		err.data[key] = options[i]
 	}
-	return &err
+	switch {
+	case num.internalOptions+num.externalOptions == 0: // no options provided
+		return &basic{msg: msg}
+
+	case num.internalOptions > 0: // at least one internal option is provided
+		err := &CustomDiagnosticError{msg: msg}
+		for i := range options {
+			switch opt := options[i].(type) {
+			case Tag:
+				if err.label != nil {
+					// if the error already has a label, do not overwrite it
+					continue
+				}
+				err.label = opt.Label
+			case Because:
+				if err.cause != nil && opt.Error != nil {
+					err.cause = fmt.Errorf("%w: %v", err.cause, opt.Error)
+				}
+				err.cause = opt.Error
+
+			case Diagnosis:
+				err.diagnosis = opt
+
+			default: // a client custom option
+				if err.custom == nil {
+					err.custom = opt
+				}
+			}
+		}
+		return err
+
+	case num.externalOptions > 0: // no internal options provided && at least one external option is provided
+		err := &CustomError{msg: msg}
+		for i := range options {
+			switch opt := options[i].(type) {
+			case Tag, Because, Diagnosis:
+				// unreachable code, because we already checked for internal options
+				continue
+
+			default: // a client custom option
+				if err.data == nil && opt != nil {
+					// only the first non-nil custom option is stored
+					err.data = opt
+					break
+				}
+			}
+		}
+		return err
+
+	default: // Unreachable code, because we already checked for internal and external options
+		return nil
+	}
 }
 
 // basic is a simple error type that implements the error interface.
@@ -46,47 +73,72 @@ func New(msg string, options ...option) error {
 // [New] will return a [basic] error if no options are provided.
 type basic struct{ msg string }
 
-// Error implements the error interface for a basic errors
+// CustomDiagnosticError implements the error interface for a basic errors
 func (b *basic) Error() string { return b.msg }
 
-type Error struct {
-	msg string
-	//options  []option
-	data map[string]option
+// CustomDiagnosticError is an error type that implements the builtin error interface.
+// It can be used to create errors with additional context, such as a [Label], cause, [Diagnosis], and client's custom [Metadata].
+type CustomDiagnosticError struct {
+	msg       string
+	label     Label
+	cause     error
+	diagnosis Diagnosis
+
+	custom metadata
 }
 
-func (e *Error) Error() string { return e.msg }
+// Error implements the error interface for [CustomDiagnosticError].
+func (err *CustomDiagnosticError) Error() string { return err.msg }
 
-// Unwrap implements the error interface for [Error].
-func (e *Error) Unwrap() []error {
+// Unwrap returns the [Label] error, [Because] error, and client's custom wrapped errors,
+// to allow interoperability with [errors.Is], [errors.As]
+func (err *CustomDiagnosticError) Unwrap() []error {
 	n := 0
-	var (
-		labeled, causedBy error
-	)
-	if opt, exist := e.data["_causes"]; exist && opt != nil {
-		n += len(opt.(causes).errs)
-	}
-
-	if opt, exist := e.data["_label"]; exist && opt != nil {
+	if err.label != nil {
 		n++
-		labeled = opt.(label).label
 	}
-	if opt, exist := e.data["_cause"]; exist && opt != nil {
+	if err.cause != nil {
 		n++
-		causedBy = opt.(cause).error
-	}
-	if n == 0 {
-		return nil
 	}
 	errs := make([]error, 0, n)
-	if opt, exist := e.data["_causes"]; exist && opt != nil {
-		errs = append(errs, opt.(causes).errs...)
+	if err.label != nil {
+		errs = append(errs, err.label)
 	}
-	if causedBy != nil {
-		errs = append(errs, causedBy)
-	}
-	if labeled != nil {
-		errs = append(errs, labeled)
+	if err.cause != nil {
+		errs = append(errs, err.cause)
 	}
 	return errs
+}
+
+// CustomError is an error type that implements the builtin error interface.
+// It can be used to create errors with additional context, such as client's custom [Metadata].
+type CustomError struct {
+	msg  string
+	data metadata
+}
+
+// Error implements the error interface for [CustomError].
+func (c *CustomError) Error() string { return c.msg }
+
+// Unwrap returns the client's custom wrapped errors, to allow interoperability
+// with [errors.Is], [errors.As].
+func (c *CustomError) Unwrap() []error {
+	if c.data == nil {
+		return nil
+	}
+	if implemented, ok := c.data.(interface{ Unwrap() error }); ok {
+		if implemented != nil {
+			errs := make([]error, 1)
+			errs[0] = implemented.Unwrap()
+			return errs
+		}
+		return nil
+	}
+	if implemented, ok := c.data.(interface{ Unwrap() []error }); ok {
+		if implemented != nil {
+			return implemented.Unwrap()
+		}
+		return nil
+	}
+	return nil
 }
