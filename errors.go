@@ -21,7 +21,7 @@ func New(msg string, options ...option) error {
 		err := &MetaError{msg: msg}
 		for i := range options {
 			switch opt := options[i].(type) {
-			case Tag, Because, Diagnosis:
+			case Tag, Because, diag:
 				// Skip possible invalid standard options
 				continue
 
@@ -46,7 +46,7 @@ func New(msg string, options ...option) error {
 		err := &RichError{StandardError: StandardError{msg: msg, label: Untagged}}
 		for i := range options {
 			switch opt := options[i].(type) {
-			case Tag, Because, Diagnosis:
+			case Tag, Because, diag:
 				applyStandardOption(&err.StandardError, opt)
 
 			default: // a client custom option
@@ -80,7 +80,7 @@ func countValidOptions(options ...option) (standard, metadata int) {
 			}
 			standard++
 
-		case Diagnosis: // is always valid (see Diag method )
+		case diag: // is always valid (see Diag method )
 			standard++
 
 		default:
@@ -118,7 +118,7 @@ func applyStandardOption(err *StandardError, input option) {
 			err.cause = opt.Error
 		}
 
-	case Diagnosis:
+	case diag:
 		err.diagnosis = opt
 
 	default:
@@ -171,7 +171,7 @@ type StandardError struct {
 	msg       string
 	label     Label
 	cause     error
-	diagnosis Diagnosis
+	diagnosis diag
 }
 
 // Error implements the error interface for [StandardError].

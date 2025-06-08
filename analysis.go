@@ -21,7 +21,7 @@ type Analysis struct {
 	// Diagnosis holds specific, technical diagnostic details about the error,
 	// including a detailed note describing the issue and its associated Severity level.
 	// This field is typically populated when the error is created with a [Diagnosis] option in [New] function.
-	Diagnosis Diagnosis
+	Diagnosis diag
 
 	// Metadata contains any additional, structured data related to the error
 	// that might be useful for context, correlation, or further investigation,

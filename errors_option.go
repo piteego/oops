@@ -9,10 +9,9 @@ type (
 	//
 	// When a Tag option is provided to [oops.New], the resulting error will be
 	// either a [StandardError] or a [RichError], depending on other options used
-	// (e.g., if custom metadata is also provided).
+	// (e.g., if custom [Metadata] is also provided).
 	//
-	// If [oops.New] is called a Tag option, the label will be wrapped within the returned
-	// [StandardError] or [RichError].
+	// If [oops.New] is called with a Tag option, the label will be wrapped within the returned error.
 	// This allows for inspecting the error chain and comparison using [errors.Is].
 	Tag struct{ Label Label }
 
@@ -25,19 +24,19 @@ type (
 	// This wrapping enables inspecting the error chain and comparison using [errors.Is].
 	Because struct{ Error error }
 
-	// Diagnosis is an option for creating errors with the [New] function.
-	// It allows you to attach a detailed note and a specific Severity level
+	// diag is an option for creating errors with the [New] function.
+	// It allows you to attach a detailed note and a specific severity level
 	// to an error, providing deeper insight into its nature and urgency.
-	// Provide a [Diagnosis] option to [New] using
+	// Provide a diag option to [New] using as follows:
 	//
-	// - [Low].Diag("note") for minor issues,
+	// - [Low].Diag("note...") for minor issues,
 	//
-	// - [Medium].Diag("note") for moderate issues,
+	// - [Medium].Diag("note...") for moderate issues,
 	//
-	// - [High].Diag("note") for significant issues, or
+	// - [High].Diag("note...") for significant issues, or
 	//
-	// - [Critical].Diag("note") for severe, urgent issues.
-	Diagnosis struct {
+	// - [Critical].Diag("note...") for severe, urgent issues.
+	diag struct {
 		note     string // A detailed explanation or specific diagnostic message for the error.
 		severity level  // The severity level of the error, indicating its importance or urgency.
 	}
@@ -55,12 +54,12 @@ type (
 	Metadata struct{}
 )
 
-func (Tag) errorOption()       {}
-func (Because) errorOption()   {}
-func (Diagnosis) errorOption() {}
-func (Metadata) errorOption()  {}
+func (Tag) errorOption()      {}
+func (Because) errorOption()  {}
+func (diag) errorOption()     {}
+func (Metadata) errorOption() {}
 
-func (opt Diagnosis) String() string {
+func (opt diag) String() string {
 	return fmt.Sprintf("{severity: %s, note: %q}", opt.severity, opt.note)
 }
 
@@ -98,4 +97,4 @@ func (l level) String() string {
 }
 
 // Diag creates a new [Diagnosis] with the specified note and severity level.
-func (l level) Diag(note string) Diagnosis { return Diagnosis{note: note, severity: l} }
+func (l level) Diag(note string) diag { return diag{note: note, severity: l} }
