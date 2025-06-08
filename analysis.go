@@ -32,6 +32,14 @@ type Analysis struct {
 
 // Analyze processes an error, breaking it down into its constituent parts
 // and providing structured information for debugging, logging, or display.
+//
+// It returns an [Analysis] struct containing the error's message, label, cause,
+// diagnosis, and any associated metadata. If the input error is nil, it returns nil.
+//
+// The function handles various error types, including custom errors like [MetaError],
+// [StandardError], and [RichError], as well as errors that implement the
+// interface {Unwrap() error} method. The wrapped error in last case will be populated as a cause
+// in the returned [Analysis] struct.
 func Analyze(input error) *Analysis {
 	if input == nil {
 		return nil
@@ -67,6 +75,15 @@ func Analyze(input error) *Analysis {
 		result.Diagnosis = err.diagnosis
 		if err.metadata != nil {
 			result.Metadata = err.metadata
+		}
+		return result
+
+	case interface{ Unwrap() error }:
+		if err == nil {
+			return result
+		}
+		if cause := err.Unwrap(); cause != nil {
+			result.Cause = cause
 		}
 		return result
 
