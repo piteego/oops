@@ -1,5 +1,7 @@
 package oops
 
+import "fmt"
+
 type (
 	// Tag is an option for creating errors with the [New] function.
 	// It embeds a [Label] to categorize the error, aiding in general identification
@@ -26,9 +28,18 @@ type (
 	// Diagnosis is an option for creating errors with the [New] function.
 	// It allows you to attach a detailed note and a specific Severity level
 	// to an error, providing deeper insight into its nature and urgency.
+	// Provide a [Diagnosis] option to [New] using
+	//
+	// - [Low].Diag("note") for minor issues,
+	//
+	// - [Medium].Diag("note") for moderate issues,
+	//
+	// - [High].Diag("note") for significant issues, or
+	//
+	// - [Critical].Diag("note") for severe, urgent issues.
 	Diagnosis struct {
-		Note     string // A detailed explanation or specific diagnostic message for the error.
-		Severity level  // The severity level of the error, indicating its importance or urgency.
+		note     string // A detailed explanation or specific diagnostic message for the error.
+		severity level  // The severity level of the error, indicating its importance or urgency.
 	}
 
 	// Metadata is an option that signals the intent to include custom, client-defined
@@ -47,34 +58,32 @@ type (
 func (Tag) errorOption()       {}
 func (Because) errorOption()   {}
 func (Diagnosis) errorOption() {}
+func (Metadata) errorOption()  {}
 
-func (Metadata) errorOption() {}
+func (opt Diagnosis) String() string {
+	return fmt.Sprintf("{severity: %s, note: %q}", opt.severity, opt.note)
+}
 
 const (
-	// UndefinedSeverity indicates an uninitialized or unknown severity level.
-	// This is the zero value for the level type.
-	UndefinedSeverity level = iota
-	// Low indicates a minor issue with low impact or urgency.
-	Low
-	// Medium indicates a moderate issue that needs attention but isn't critical.
+	// Low severity level indicates a minor issue with low impact or urgency.
+	Low level = iota + 1
+	// Medium severity level indicates a moderate issue that needs attention but isn't critical.
 	Medium
-	// High indicates a significant issue requiring immediate attention.
+	// High severity level indicates a significant issue requiring immediate attention.
 	High
-	// Critical indicates a severe, system-impacting issue requiring urgent resolution.
+	// Critical severity level indicates a severe, system-impacting issue requiring urgent resolution.
 	Critical
 )
 
 // level is used as a severity level in the [Diagnosis] error option,
 // indicating the importance or urgency of a particular error.
 // It defines predefined levels ranging from [Low] to [Critical],
-// with [UndefinedSeverity] as the zero value.
+// with [undefinedSeverity] as the zero value.
 type level uint8
 
 // String returns the string representation of the severity level.
 func (l level) String() string {
 	switch l {
-	case UndefinedSeverity: // 0
-		return "Undefined"
 	case Low: // 1
 		return "Low"
 	case Medium: // 2
@@ -87,3 +96,6 @@ func (l level) String() string {
 		return "Unknown"
 	}
 }
+
+// Diag creates a new [Diagnosis] with the specified note and severity level.
+func (l level) Diag(note string) Diagnosis { return Diagnosis{note: note, severity: l} }
