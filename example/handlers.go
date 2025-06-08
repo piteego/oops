@@ -2,23 +2,23 @@ package example
 
 import (
 	"errors"
-	"github.com/piteego/oops"
+	"github.com/piteego/oops/v0"
 )
 
-func HandleRepoErr(entity string) oops.Handler {
-	return func(err error) *oops.Error {
+func HandleRepoErr(entity string) v0.Handler {
+	return func(err error) *v0.Error {
 		if err == nil {
 			return nil
 		}
 		if errors.Is(err, RedisCacheMissed) {
-			return oops.New(entity+" not found", oops.Tag(NotFound.Error)).(*oops.Error)
+			return v0.New(entity+" not found", v0.Tag(NotFound.Error)).(*v0.Error)
 		}
 		if errors.Is(err, GormErrDuplicatedKey) {
-			return oops.New("duplicated "+entity, oops.Tag(Duplication.Error)).(*oops.Error)
+			return v0.New("duplicated "+entity, v0.Tag(Duplication.Error)).(*v0.Error)
 		}
 		if errors.Is(err, GormErrRecordNotFound) {
-			return oops.New(entity+" not found", oops.Tag(NotFound.Error)).(*oops.Error)
+			return v0.New(entity+" not found", v0.Tag(NotFound.Error)).(*v0.Error)
 		}
-		return oops.New("something went wrong", oops.Tag(Internal.Error)).(*oops.Error)
+		return v0.New("something went wrong", v0.Tag(Internal.Error)).(*v0.Error)
 	}
 }

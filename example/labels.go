@@ -2,13 +2,13 @@ package example
 
 import (
 	"errors"
-	"github.com/piteego/oops"
+	"github.com/piteego/oops/v0"
 )
 
 // custom is an example struct that uses the oops.Label to define custom error categories.
 type custom struct {
 	Code        int
-	Error       oops.Label
+	Error       v0.Label
 	Description string
 	// more fields can be added as needed, for example:
 	// httpStatus int

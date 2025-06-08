@@ -1,4 +1,4 @@
-package oops
+package v0
 
 // Handler is a function type that takes an error and returns an *[Error].
 type Handler func(error) *Error

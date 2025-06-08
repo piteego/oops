@@ -1,4 +1,4 @@
-package v1
+package oops
 
 // Analysis represents a comprehensive, structured breakdown of a builtin error,
 // providing detailed information for understanding, logging, and debugging.

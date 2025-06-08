@@ -1,10 +1,10 @@
-package oops_test
+package v0_test
 
 import (
 	"errors"
 	"fmt"
-	"github.com/piteego/oops"
 	"github.com/piteego/oops/example"
+	"github.com/piteego/oops/v0"
 	"testing"
 )
 
@@ -12,7 +12,7 @@ var (
 	commonTestCases = []struct {
 		name string
 		// inputs
-		label oops.Label
+		label v0.Label
 		msg   string
 	}{
 		{"ExampleLabelInternal", example.Internal.Error, "An internal error occurred"},
@@ -28,11 +28,11 @@ var (
 func TestNew(t *testing.T) {
 	for _, tc := range commonTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, oops.Tag(tc.label))
+			got := v0.New(tc.msg, v0.Tag(tc.label))
 			if got == nil {
 				t.Errorf("oops.New() never returns nil, got nil")
 			}
-			_ = got.(*oops.Error) // ensure that got is of type *oops.Error
+			_ = got.(*v0.Error) // ensure that got is of type *oops.Error
 			if got.Error() != tc.msg {
 				t.Errorf("oops.Error.Error() must lead to the client msg %q, got %q", tc.msg, got.Error())
 			}
@@ -40,7 +40,7 @@ func TestNew(t *testing.T) {
 				t.Errorf("Printing oops.Error with fmt.Sprintf must lead to the client msg %q, got %q", tc.msg, fmt.Sprintf("%v", got))
 			}
 			if !errors.Is(got, tc.label) {
-				t.Logf("##### got.(*oops.Error).Unwrap(): %v", got.(*oops.Error).Unwrap())
+				t.Logf("##### got.(*oops.Error).Unwrap(): %v", got.(*v0.Error).Unwrap())
 				t.Errorf("Comparing oops.Error with client custom Label using errors.Is() must lead to true, got false")
 			}
 		})
@@ -57,7 +57,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 	cause := errors.New("cause error")
 	for _, tc := range commonTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := oops.New(tc.msg, oops.Tag(tc.label), oops.Because(cause))
+			got := v0.New(tc.msg, v0.Tag(tc.label), v0.Because(cause))
 			if !errors.Is(got, cause) {
 				t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 			}
@@ -66,7 +66,7 @@ func TestNew_CausedBySuccessfullyWrappedInOopsErrorWrapper(t *testing.T) {
 }
 
 func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
-	got := oops.New("The requested resource was not found", oops.Tag(example.NotFound.Error))
+	got := v0.New("The requested resource was not found", v0.Tag(example.NotFound.Error))
 	if !errors.Is(got, example.NotFound.Error) {
 		t.Errorf("Comparing oops.Error with client custom error using errors.Is() must lead to true, got false")
 	}
@@ -74,7 +74,7 @@ func TestNew_ClientCustomErrorSuccessfullyWrappedInOopsError(t *testing.T) {
 
 func TestNew_IsRootCauseError(t *testing.T) {
 	cause := errors.New("cause error")
-	got := oops.New("An internal error occurred", oops.Tag(example.Internal.Error), oops.Because(cause))
+	got := v0.New("An internal error occurred", v0.Tag(example.Internal.Error), v0.Because(cause))
 	if !errors.Is(got, cause) {
 		t.Errorf("Comparing oops.Error with its root cause error using errors.Is() must lead to true, got false")
 	}
@@ -82,16 +82,16 @@ func TestNew_IsRootCauseError(t *testing.T) {
 
 func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 	process := func() error {
-		lowLevelNotFound := oops.New("The requested resource was not found",
-			oops.Tag(example.NotFound.Error), oops.Because(errors.New("a low-level error")),
+		lowLevelNotFound := v0.New("The requested resource was not found",
+			v0.Tag(example.NotFound.Error), v0.Because(errors.New("a low-level error")),
 		)
-		return oops.New("Unprocessable entity",
-			oops.Because(lowLevelNotFound),
-			oops.Tag(example.Internal.Error),
+		return v0.New("Unprocessable entity",
+			v0.Because(lowLevelNotFound),
+			v0.Tag(example.Internal.Error),
 		)
 	}
 	got := process()
-	var oopsErr *oops.Error
+	var oopsErr *v0.Error
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
@@ -103,12 +103,12 @@ func TestNew_OptionsOrderIsNotImportant(t *testing.T) {
 
 func TestBuiltinErrorsAsOopsError(t *testing.T) {
 	process := func() error {
-		return oops.New("Something went wrong",
-			oops.Tag(example.Internal.Error), oops.Because(errors.New("a low-level error")),
+		return v0.New("Something went wrong",
+			v0.Tag(example.Internal.Error), v0.Because(errors.New("a low-level error")),
 		)
 	}
 	got := process()
-	var oopsErr *oops.Error
+	var oopsErr *v0.Error
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}
@@ -118,10 +118,10 @@ func TestBuiltinErrorsAsOopsError(t *testing.T) {
 func TestError_Unwrap(t *testing.T) {
 	// TODO: need to be improved
 	mainIssue := errors.New("main issue")
-	got := oops.New("The request is unprocessable",
-		oops.Tag(example.Unprocessable.Error), oops.Because(mainIssue),
+	got := v0.New("The request is unprocessable",
+		v0.Tag(example.Unprocessable.Error), v0.Because(mainIssue),
 	)
-	var oopsErr *oops.Error
+	var oopsErr *v0.Error
 	if !errors.As(got, &oopsErr) {
 		t.Errorf("expected *oops.Error, got %T", got)
 	}

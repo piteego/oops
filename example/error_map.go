@@ -1,11 +1,11 @@
 package example
 
 import (
-	"github.com/piteego/oops"
+	"github.com/piteego/oops/v0"
 )
 
-var ErrMap = oops.Map{
-	RedisCacheMissed:      oops.New("cache key not found", oops.Tag(NotFound.Error)).(*oops.Error),
-	GormErrDuplicatedKey:  oops.New("duplicated entity", oops.Tag(Duplication.Error)).(*oops.Error),
-	GormErrRecordNotFound: oops.New("entity not found", oops.Tag(NotFound.Error)).(*oops.Error),
+var ErrMap = v0.Map{
+	RedisCacheMissed:      v0.New("cache key not found", v0.Tag(NotFound.Error)).(*v0.Error),
+	GormErrDuplicatedKey:  v0.New("duplicated entity", v0.Tag(Duplication.Error)).(*v0.Error),
+	GormErrRecordNotFound: v0.New("entity not found", v0.Tag(NotFound.Error)).(*v0.Error),
 }

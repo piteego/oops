@@ -1,22 +1,22 @@
-package oops_test
+package v0_test
 
 import (
 	"errors"
 	"fmt"
-	"github.com/piteego/oops"
 	"github.com/piteego/oops/example"
+	"github.com/piteego/oops/v0"
 	"strconv"
 )
 
 func ExampleLabel() {
-	ErrInternal := oops.Label(errors.New("something went wrong"))
-	ErrNotFound := oops.Label(errors.New("resource not found"))
-	ErrForbidden := oops.Label(errors.New("forbidden access"))
-	ErrValidation := oops.Label(errors.New("invalid input"))
-	ErrDuplication := oops.Label(errors.New("duplicate entry"))
-	ErrUnauthorized := oops.Label(errors.New("unauthorized access"))
-	ErrUnimplemented := oops.Label(errors.New("not implemented yet"))
-	ErrUnprocessable := oops.Label(errors.New("the request is unprocessable"))
+	ErrInternal := v0.Label(errors.New("something went wrong"))
+	ErrNotFound := v0.Label(errors.New("resource not found"))
+	ErrForbidden := v0.Label(errors.New("forbidden access"))
+	ErrValidation := v0.Label(errors.New("invalid input"))
+	ErrDuplication := v0.Label(errors.New("duplicate entry"))
+	ErrUnauthorized := v0.Label(errors.New("unauthorized access"))
+	ErrUnimplemented := v0.Label(errors.New("not implemented yet"))
+	ErrUnprocessable := v0.Label(errors.New("the request is unprocessable"))
 	fmt.Println(ErrInternal)
 	fmt.Println(ErrNotFound)
 	fmt.Println(ErrForbidden)
@@ -37,12 +37,12 @@ func ExampleLabel() {
 }
 
 func ExampleNew_withNoOptions() {
-	err := oops.New("emit macho dwarf: elf header corrupted")
+	err := v0.New("emit macho dwarf: elf header corrupted")
 	if err != nil {
 		fmt.Println(err)
-		var oopsErr *oops.Error
+		var oopsErr *v0.Error
 		fmt.Println(errors.As(err, &oopsErr))
-		fmt.Println(errors.Is(err, oops.Untagged))
+		fmt.Println(errors.Is(err, v0.Untagged))
 	}
 	// Output:
 	// emit macho dwarf: elf header corrupted
@@ -51,12 +51,12 @@ func ExampleNew_withNoOptions() {
 }
 
 func ExampleNew_tagCustomLabel() {
-	customLabel := oops.Label(errors.New("custom error label"))
-	err := oops.New("emit macho dwarf: elf header corrupted", oops.Tag(customLabel))
+	customLabel := v0.Label(errors.New("custom error label"))
+	err := v0.New("emit macho dwarf: elf header corrupted", v0.Tag(customLabel))
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(errors.Is(err, customLabel))
-		var oopsErr *oops.Error
+		var oopsErr *v0.Error
 		fmt.Println(errors.As(err, &oopsErr))
 		if oopsErr != nil {
 			fmt.Printf("%q", oopsErr.Unwrap())
@@ -75,8 +75,8 @@ func ExampleNew_causedByStackErrors() {
 		_, a2iErr := strconv.Atoi("invalid data")
 		return []error{ErrProcessFailed, a2iErr}
 	}
-	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.Because(failedProcess()...),
+	err := v0.New("emit macho dwarf: elf header corrupted",
+		v0.Because(failedProcess()...),
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -90,7 +90,7 @@ func ExampleNew_causedByStackErrors() {
 }
 
 func ExampleError_Error() {
-	err := oops.New("emit macho dwarf: elf header corrupted")
+	err := v0.New("emit macho dwarf: elf header corrupted")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -99,16 +99,16 @@ func ExampleError_Error() {
 }
 
 func ExampleError_Unwrap() {
-	customLabel := oops.Label(errors.New("custom error label"))
-	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.Tag(customLabel),
-		oops.Because(
+	customLabel := v0.Label(errors.New("custom error label"))
+	err := v0.New("emit macho dwarf: elf header corrupted",
+		v0.Tag(customLabel),
+		v0.Because(
 			errors.New("cause error 1"),
 			errors.New("cause error 2"),
 		),
 	)
 	if err != nil {
-		var oopsErr *oops.Error
+		var oopsErr *v0.Error
 		if errors.As(err, &oopsErr) {
 			fmt.Printf("%q\n", oopsErr.Unwrap())
 		}
@@ -118,9 +118,9 @@ func ExampleError_Unwrap() {
 }
 
 func ExampleTag() {
-	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.Tag(example.Internal.Error),
-		oops.Tag(example.NotFound.Error), // multiple tags are not merged, the first tag is used
+	err := v0.New("emit macho dwarf: elf header corrupted",
+		v0.Tag(example.Internal.Error),
+		v0.Tag(example.NotFound.Error), // multiple tags are not merged, the first tag is used
 	)
 	if err != nil {
 		fmt.Println(errors.Is(err, example.Internal.Error))
@@ -136,13 +136,13 @@ func ExampleBecause() {
 		errors.New("cause error 1"),
 		errors.New("cause error 2"),
 	}
-	err := oops.New("emit macho dwarf: elf header corrupted",
-		oops.Because(
+	err := v0.New("emit macho dwarf: elf header corrupted",
+		v0.Because(
 			reasons..., // multiple causes are merged into a single oops.Error's stack trace
 		),
 	)
 	if err != nil {
-		var oopsErr *oops.Error
+		var oopsErr *v0.Error
 		if errors.As(err, &oopsErr) {
 			fmt.Printf("%q\n", oopsErr.Unwrap())
 		}
@@ -178,17 +178,17 @@ func ExampleHandler_asVariable() {
 	err1 := errors.New("error.1")
 	err2 := errors.New("error.2")
 	// ... and some other errors in lower layers
-	var handle oops.Handler = func(err error) *oops.Error {
+	var handle v0.Handler = func(err error) *v0.Error {
 		if err == nil {
 			return nil
 		}
 		if errors.Is(err, err1) {
-			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.Because(err1)).(*oops.Error)
+			return v0.New("handled error.1", v0.Tag(example.Forbidden.Error), v0.Because(err1)).(*v0.Error)
 		}
 		if errors.Is(err, err2) {
-			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.Because(err2)).(*oops.Error)
+			return v0.New("handled error.2", v0.Tag(example.NotFound.Error), v0.Because(err2)).(*v0.Error)
 		}
-		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.Because(err)).(*oops.Error)
+		return v0.New("unknown error", v0.Tag(example.Internal.Error), v0.Because(err)).(*v0.Error)
 	}
 	oopsErr := handle(err1)
 	fmt.Println(oopsErr)
@@ -202,25 +202,25 @@ func ExampleHandle() {
 	err1 := errors.New("error.1")
 	err2 := errors.New("error.2")
 	// ... and some other errors in lower layers
-	var handler oops.Handler = func(err error) *oops.Error {
+	var handler v0.Handler = func(err error) *v0.Error {
 		if err == nil {
 			return nil
 		}
 		if errors.Is(err, err1) {
-			return oops.New("handled error.1", oops.Tag(example.Forbidden.Error), oops.Because(err1)).(*oops.Error)
+			return v0.New("handled error.1", v0.Tag(example.Forbidden.Error), v0.Because(err1)).(*v0.Error)
 		}
 		if errors.Is(err, err2) {
-			return oops.New("handled error.2", oops.Tag(example.NotFound.Error), oops.Because(err2)).(*oops.Error)
+			return v0.New("handled error.2", v0.Tag(example.NotFound.Error), v0.Because(err2)).(*v0.Error)
 		}
-		return oops.New("unknown error", oops.Tag(example.Internal.Error), oops.Because(err)).(*oops.Error)
+		return v0.New("unknown error", v0.Tag(example.Internal.Error), v0.Because(err)).(*v0.Error)
 	}
 
-	fmt.Println(oops.Handle(err1, handler))
-	fmt.Println(oops.Handle(err2, handler))
-	fmt.Println(oops.Handle(errors.New("unhandled error"), handler))
-	fmt.Println(oops.Handle(nil, handler)) // should return nil
-	fmt.Println(oops.Handle(errors.New("an error with nil handler"), nil))
-	fmt.Println(oops.Handle(oops.New("already an oops error", oops.Tag(example.Validation.Error))))
+	fmt.Println(v0.Handle(err1, handler))
+	fmt.Println(v0.Handle(err2, handler))
+	fmt.Println(v0.Handle(errors.New("unhandled error"), handler))
+	fmt.Println(v0.Handle(nil, handler)) // should return nil
+	fmt.Println(v0.Handle(errors.New("an error with nil handler"), nil))
+	fmt.Println(v0.Handle(v0.New("already an oops error", v0.Tag(example.Validation.Error))))
 	// Output:
 	// handled error.1
 	// handled error.2

@@ -1,4 +1,4 @@
-package oops
+package v0
 
 // Map is a type that maps errors to *[Error] instances.
 type Map map[error]*Error

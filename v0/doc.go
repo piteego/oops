@@ -1,4 +1,4 @@
-// Package oops offers a straightforward and structured approach to error handling in Go applications.
+// Package v0 offers a straightforward and structured approach to error handling in Go applications.
 //
 // It enables you to create, categorize, and manage errors effectively using a system of labels and handlers.
 //
@@ -32,4 +32,4 @@
 //
 // -- Custom Handlers: Define complex [Handler] functions in different application layers.
 // The [Handle] function can then be used to process a given error by invoking a series of these custom handlers.
-package oops
+package v0
