@@ -2,11 +2,11 @@ package example
 
 import (
 	"fmt"
-	"github.com/piteego/oops"
+	"github.com/piteego/oops/v1_0"
 )
 
 type Metadata struct {
-	oops.Metadata
+	v1_0.Metadata
 	Code  int
 	Retry bool
 }

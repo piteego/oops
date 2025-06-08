@@ -1,4 +1,4 @@
-package oops
+package v1_0
 
 import "fmt"
 

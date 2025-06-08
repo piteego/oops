@@ -1,13 +1,11 @@
-package oops
+package v1_0
 
 import (
 	"errors"
 	"fmt"
 )
 
-type (
-	option interface{ errorOption() }
-)
+type option interface{ errorOption() }
 
 func New(msg string, options ...option) error {
 	// count valid standard and metadata options
@@ -163,6 +161,14 @@ func (err *MetaError) Unwrap() []error {
 	}
 }
 
+// Data returns the client's custom metadata associated with a [MetaError].
+func (err *MetaError) Data() any {
+	if err == nil {
+		return nil
+	}
+	return err.metadata
+}
+
 // StandardError is an error type that implements the standard [error] interface.
 // It represents the 'oops' package's default structured error, providing core
 // diagnostic details. These include a categorical [Label], the underlying [Because] error,
@@ -191,6 +197,29 @@ func (err *StandardError) Unwrap() []error {
 		errs = append(errs, err.label)
 	}
 	return errs
+}
+
+func (err *StandardError) Label() Label {
+	if err == nil {
+		return nil
+	}
+	return err.label
+}
+
+// CausedBy returns the underlying cause of a [StandardError], if any.
+func (err *StandardError) CausedBy() error {
+	if err == nil {
+		return nil
+	}
+	return err.cause
+}
+
+// Diag returns the diagnosis of the error, which includes a note and severity level.
+func (err *StandardError) Diag() (note, severity string) {
+	if err == nil {
+		return "", "Unknown"
+	}
+	return err.diagnosis.note, err.diagnosis.severity.String()
 }
 
 // RichError is an error type that implements the standard [error] interface.
@@ -227,4 +256,12 @@ func (err *RichError) Unwrap() []error {
 		}
 	}
 	return errs[:len(errs):len(errs)] // clip the slice to the actual length
+}
+
+// Data returns the client's custom metadata associated with a [RichError].
+func (err *RichError) Data() any {
+	if err == nil {
+		return nil
+	}
+	return err.metadata
 }

@@ -1,25 +1,25 @@
-package oops_test
+package v1_0_test
 
 import (
 	"errors"
 	"fmt"
-	"github.com/piteego/oops"
 	"github.com/piteego/oops/example"
+	"github.com/piteego/oops/v1_0"
 )
 
 func ExampleAnalyze() {
 	errs := []error{
 		errors.New("builtin error using errors.New"),
 		fmt.Errorf("wrap '%w' using fmt.Errorf", errors.New("another builtin error")),
-		oops.New("rich error using oops.New",
-			oops.Tag{Label: example.NotFound.Error},
-			oops.Because{Error: errors.New("cause of the error")},
-			oops.Medium.Diag("this is a diagnostic note"),
+		v1_0.New("rich error using oops.New",
+			v1_0.Tag{Label: example.NotFound.Error},
+			v1_0.Because{Error: errors.New("cause of the error")},
+			v1_0.Medium.Diag("this is a diagnostic note"),
 			example.Metadata{Retry: true, Code: 96},
 		),
 	}
 	for i := range errs {
-		analysis := oops.Analyze(errs[i])
+		analysis := v1_0.Analyze(errs[i])
 		if analysis != nil {
 			fmt.Printf("%+v\n", analysis)
 		}
