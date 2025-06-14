@@ -7,6 +7,7 @@ import (
 )
 
 func ExampleNew() {
+	kind := errors.New("this is a kind")
 	type MyMeta struct {
 		oops.Metadata `json:"-"`
 		Code          int
@@ -17,22 +18,27 @@ func ExampleNew() {
 			nil, &oops.Tag{}, oops.Metadata{}, &oops.Metadata{},
 		),
 		oops.New("this is a standard error including cause, and kind errors",
-			&oops.Tag{Cause: errors.New("this is a cause"), Kind: errors.New("this is a kind")},
+			&oops.Tag{Kind: kind, Cause: errors.New("this is a cause")},
 		),
 		oops.New("this is a meta error including client custom metadata", MyMeta{Code: 42}),
 		oops.New("this is a rich error: standard + meta", MyMeta{Code: 42},
-			&oops.Tag{Cause: errors.New("this is a cause"), Kind: errors.New("this is a kind")},
+			&oops.Tag{Kind: kind, Cause: errors.New("this is a cause")},
 		),
 	}
 	for i := range errs {
-		fmt.Println(errs[i].Error())
+		fmt.Println(errs[i])
+		if errors.Is(errs[i], kind) {
+			fmt.Println("errors.Is(err, kind) = true")
+		}
 	}
 	// Output:
 	// this is a basic error: no meta, no cause, no kind
 	// this is a basic error: zero options are skipped
 	// this is a standard error including cause, and kind errors
+	// errors.Is(err, kind) = true
 	// this is a meta error including client custom metadata
 	// this is a rich error: standard + meta
+	// errors.Is(err, kind) = true
 }
 
 func ExampleDiag() {
@@ -55,7 +61,7 @@ func ExampleDiag() {
 		),
 	}
 	for i := range errs {
-		fmt.Println(errs[i].Error())
+		fmt.Println(errs[i])
 	}
 	// Output:
 	// an error including diagnostic note, and low severity level

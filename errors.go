@@ -80,5 +80,18 @@ func (err *causeMetaErr) Error() string { return err.msg }
 func (err *stdErr) Error() string       { return err.msg }
 func (err *richErr) Error() string      { return err.msg }
 
-// Unwrap returns the wrapped error, allowing interoperability with [errors.Is], [errors.As], and [errors.Unwrap].
-func (err *causeErr) Unwrap() error { return err.cause }
+// Unwrap returns the wrapped kind error, allowing interoperability
+// of a kind error with [errors.Is], [errors.As], and [errors.Unwrap].
+func (err *kindErr) Unwrap() error { return err.kind }
+
+// Unwrap returns the wrapped kind error, allowing interoperability
+// of a kind-meta error with [errors.Is], [errors.As], and [errors.Unwrap].
+func (err *kindMetaErr) Unwrap() error { return err.kind }
+
+// Unwrap returns the wrapped kind error, allowing interoperability
+// of a standard error with [errors.Is], [errors.As], and [errors.Unwrap].
+func (err *stdErr) Unwrap() error { return err.kind }
+
+// Unwrap returns the wrapped kind error, allowing interoperability
+// of a rich error with [errors.Is], [errors.As], and [errors.Unwrap].
+func (err *richErr) Unwrap() error { return err.standard.kind }
