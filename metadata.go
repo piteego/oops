@@ -47,13 +47,13 @@ func (l level) String() string {
 	}
 }
 
-// Diag creates a new diag with the specified note and severity level.
-func (l level) Diag(note string) diag { return diag{note: note, severity: l} }
+// Diag creates a new Diag with the specified note and severity level.
+func (l level) Diag(note string) Diag { return Diag{note: note, severity: l} }
 
-// diag is a type which could be attached to [Tag] option for creating errors with the [New] function.
+// Diag is a type which could be attached to a [Metadata] option for creating errors with the [New] function.
 // It allows you to attach a detailed note and a specific severity level
 // to an error, providing deeper insight into its nature and urgency.
-// Provide a diag option to [New] using as follows:
+// Create a Diag as follows:
 //
 // - [Low].Diag("note...") for minor issues,
 //
@@ -62,7 +62,7 @@ func (l level) Diag(note string) diag { return diag{note: note, severity: l} }
 // - [High].Diag("note...") for significant issues, or
 //
 // - [Critical].Diag("note...") for severe, urgent issues.
-type diag struct {
+type Diag struct {
 	note     string // A detailed explanation or specific diagnostic message for the error.
 	severity level  // The severity level of the error, indicating its importance or urgency.
 }

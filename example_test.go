@@ -25,12 +25,41 @@ func ExampleNew() {
 		),
 	}
 	for i := range errs {
-		fmt.Printf("%+v\n", errs[i])
+		fmt.Println(errs[i].Error())
 	}
 	// Output:
-	//this is a basic error: no meta, no cause, no kind
-	//this is a basic error: zero options are skipped
-	//this is a standard error including cause, and kind errors
-	//this is a meta error including client custom metadata
-	//this is a rich error: standard + meta
+	// this is a basic error: no meta, no cause, no kind
+	// this is a basic error: zero options are skipped
+	// this is a standard error including cause, and kind errors
+	// this is a meta error including client custom metadata
+	// this is a rich error: standard + meta
+}
+
+func ExampleDiag() {
+	type MyMeta struct {
+		oops.Metadata
+		Diag oops.Diag
+	}
+	errs := []error{
+		oops.New("an error including diagnostic note, and low severity level",
+			MyMeta{Diag: oops.Low.Diag("custom diag note...")},
+		),
+		oops.New("an error including diagnostic note, and medium severity level",
+			MyMeta{Diag: oops.Medium.Diag("custom diag note...")},
+		),
+		oops.New("an error including diagnostic note, and high severity level",
+			MyMeta{Diag: oops.High.Diag("custom diag note...")},
+		),
+		oops.New("an error including diagnostic note, and critical severity level",
+			MyMeta{Diag: oops.Critical.Diag("custom diag note...")},
+		),
+	}
+	for i := range errs {
+		fmt.Println(errs[i].Error())
+	}
+	// Output:
+	// an error including diagnostic note, and low severity level
+	// an error including diagnostic note, and medium severity level
+	// an error including diagnostic note, and high severity level
+	// an error including diagnostic note, and critical severity level
 }
