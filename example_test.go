@@ -13,9 +13,8 @@ func ExampleNew() {
 	}
 	errs := []error{
 		oops.New("this is a basic error: no meta, no cause, no kind"),
-		oops.New("this is a basic error: zero values are skipped",
-			nil, &oops.Tag{}, oops.Metadata{},
-			&oops.Metadata{}, &oops.Tag{},
+		oops.New("this is a basic error: zero options are skipped",
+			nil, &oops.Tag{}, oops.Metadata{}, &oops.Metadata{},
 		),
 		oops.New("this is a standard error including cause, and kind errors",
 			&oops.Tag{Cause: errors.New("this is a cause"), Kind: errors.New("this is a kind")},
@@ -30,7 +29,7 @@ func ExampleNew() {
 	}
 	// Output:
 	//this is a basic error: no meta, no cause, no kind
-	//this is a basic error: zero values are skipped
+	//this is a basic error: zero options are skipped
 	//this is a standard error including cause, and kind errors
 	//this is a meta error including client custom metadata
 	//this is a rich error: standard + meta
