@@ -1,61 +1,49 @@
 package oops
 
 type Tag struct {
-	Cause, Label error
-	Diag         diag
+	Kind  error
+	Cause error
 }
 
 func (*Tag) errorOption() {}
 
-const (
-	// Low severity level indicates a minor issue with low impact or urgency.
-	Low level = iota + 1
-	// Medium severity level indicates a moderate issue that needs attention but isn't critical.
-	Medium
-	// High severity level indicates a significant issue requiring immediate attention.
-	High
-	// Critical severity level indicates a severe, system-impacting issue requiring urgent resolution.
-	Critical
-)
+func (tag *Tag) newError(msg string, meta data) error {
+	switch {
+	case tag == nil && meta == nil:
+		return &msgErr{msg: msg}
 
-// level is used as a severity level in the [Diagnosis] error option,
-// indicating the importance or urgency of a particular error.
-// It defines predefined levels ranging from [Low] to [Critical],
-// with [undefinedSeverity] as the zero value.
-type level uint8
+	case tag == nil && meta != nil:
+		return &metaErr{msg: msg, meta: meta}
 
-// String returns the string representation of the severity level
-func (l level) String() string {
-	switch l {
-	case Low: // 1
-		return "Low"
-	case Medium: // 2
-		return "Medium"
-	case High: // 3
-		return "High"
-	case Critical: // 4
-		return "Critical"
-	default:
-		return "Unknown"
+	default: // tag is not nil
+		switch {
+		case tag.Cause == nil && tag.Kind == nil && meta == nil: // basic error
+			return &msgErr{msg: msg}
+
+		case tag.Cause == nil && tag.Kind == nil && meta != nil: // meta error
+			return &metaErr{msg: msg, meta: meta}
+
+		case tag.Cause == nil && tag.Kind != nil && meta == nil: // kind error
+			return &kindErr{msg: msg, kind: tag.Kind}
+
+		case tag.Cause == nil && tag.Kind != nil && meta != nil: // kind & meta error
+			return &kindMetaErr{msg: msg, kind: tag.Kind, meta: meta}
+
+		case tag.Cause != nil && tag.Kind == nil && meta == nil: // cause error
+			return &causeErr{msg: msg, cause: tag.Cause}
+
+		case tag.Cause != nil && tag.Kind == nil && meta != nil: // cause & meta error
+			return &causeMetaErr{msg: msg, cause: tag.Cause, meta: meta}
+
+		case tag.Cause != nil && tag.Kind != nil && meta == nil: // standard error
+			return &stdErr{msg: msg, standard: standard{kind: tag.Kind, cause: tag.Cause}}
+
+		case tag.Cause != nil && tag.Kind != nil && meta != nil: // rich error
+			return &richErr{msg: msg, standard: standard{kind: tag.Kind, cause: tag.Cause}, meta: meta}
+
+		default:
+			// This case should never happen, but we handle it gracefully.
+			return &msgErr{msg: msg}
+		}
 	}
-}
-
-// Diag creates a new diag with the specified note and severity level.
-func (l level) Diag(note string) diag { return diag{note: note, severity: l} }
-
-// diag is a type which could be attached to [Tag] option for creating errors with the [New] function.
-// It allows you to attach a detailed note and a specific severity level
-// to an error, providing deeper insight into its nature and urgency.
-// Provide a diag option to [New] using as follows:
-//
-// - [Low].Diag("note...") for minor issues,
-//
-// - [Medium].Diag("note...") for moderate issues,
-//
-// - [High].Diag("note...") for significant issues, or
-//
-// - [Critical].Diag("note...") for severe, urgent issues.
-type diag struct {
-	note     string // A detailed explanation or specific diagnostic message for the error.
-	severity level  // The severity level of the error, indicating its importance or urgency.
 }
