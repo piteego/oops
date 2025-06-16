@@ -1,4 +1,4 @@
-package oops
+package v1_1
 
 // Metadata is an option that signals the intent to include custom, client-defined
 // data when creating an error with the [New] function.

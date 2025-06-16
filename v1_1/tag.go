@@ -1,4 +1,4 @@
-package oops
+package v1_1
 
 type Tag struct {
 	Kind  error

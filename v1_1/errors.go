@@ -1,4 +1,4 @@
-package oops
+package v1_1
 
 type option interface{ errorOption() }
 
