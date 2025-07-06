@@ -1,39 +1,70 @@
 package oops
 
-func New[T any](msg string, options ...func(*T)) error {
-	n := 0
+func New(msg string, options ...func(error) error) error {
+	var err error = &msgError{msg: msg}
 	for i := range options {
-		if options[i] != nil {
-			n++
-		}
-	}
-	if n == 0 {
-		return &Error[struct{}]{msg: msg}
-	}
-	err := &Error[T]{msg: msg}
-	for i := range options {
-		if options[i] != nil {
-			options[i](&err.data)
-		}
+		err = options[i](err)
 	}
 	return err
 }
 
-type Error[T any] struct {
-	msg  string
-	data T
-}
+type msgError struct{ msg string }
 
-func (err *Error[_]) Error() string { return err.msg }
+func (err *msgError) Error() string { return err.msg }
 
-func (err *Error[T]) Unwrap() error {
-	switch t := any(err.data).(type) {
-	case interface{ Unwrap() error }:
-		return t.Unwrap()
+type (
+	data             = any
+	setError[D data] struct {
+		base error
+		data D
+	}
+)
 
-	default:
-		return nil
+func (err *setError[_]) Error() string { return err.base.Error() }
+
+func (err *setError[_]) Unwrap() error { return err.base }
+
+type kindError = setError[Code]
+
+func WithKind(kind Code) func(error) error {
+	return func(e error) error {
+		switch err := e.(type) {
+		case *kindError:
+			err.data = kind
+			return err
+
+		default:
+			return &kindError{base: err, data: kind}
+		}
 	}
 }
 
-func (err *Error[T]) Data() T { return err.data }
+type causeError = setError[Cause]
+
+func WithCause(cause Cause) func(error) error {
+	return func(e error) error {
+		switch err := e.(type) {
+		case *causeError:
+			err.data = cause
+			return err
+
+		default:
+			return &causeError{base: err, data: cause}
+		}
+	}
+}
+
+type severityError = setError[Level]
+
+func WithSeverity(severity Level) func(error) error {
+	return func(e error) error {
+		switch err := e.(type) {
+		case *severityError:
+			err.data = severity
+			return err
+
+		default:
+			return &severityError{base: err, data: severity}
+		}
+	}
+}

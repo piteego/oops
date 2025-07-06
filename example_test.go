@@ -4,27 +4,57 @@ import (
 	"errors"
 	"fmt"
 	"github.com/piteego/oops"
-	"github.com/piteego/oops/example"
 )
 
-func ExampleNew() {
-	err := oops.New("this is a message", oops.With(
-		example.Internal.Error,
-		oops.Low.Diag("this is a note").CausedBy(example.Unimplemented.Error),
-	))
-	if err != nil {
-		fmt.Println(err)
-		var oopsErr *oops.Error[oops.Standard]
-		if errors.As(err, &oopsErr) {
-			data := oopsErr.Data()
-			fmt.Printf("kind: %q, cause: %q, severity: %q, note: %q\n", data.Kind, data.Diag.Cause(), data.Diag.Severity(), data.Diag.Note())
-		}
-		if errors.Is(err, example.Internal.Error) {
-			fmt.Printf("oops error is of kind %q", example.Internal.Error)
-		}
-	}
+func ExampleNew_standardOptions() {
+	err := oops.New("this is a message",
+		oops.WithKind(5),
+		oops.WithSeverity(2),
+		oops.WithCause(errors.New("this is a cause")),
+	)
+	fmt.Println(err)
+	fmt.Println("code:", oops.GetMetadata[oops.Code](err))
+	fmt.Println("severity:", oops.GetMetadata[oops.Level](err))
+	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
 	// Output:
 	// this is a message
-	// kind: "something went wrong", cause: "not implemented yet", severity: "Low", note: "this is a note"
-	// oops error is of kind "something went wrong"
+	// code: 5
+	// severity: 2
+	// cause: this is a cause
+}
+
+func ExampleNew_withClientCustomMetadata() {
+	type custom struct {
+		Id    string
+		Retry bool
+	}
+	err := oops.SetMetadata(errors.New("this is a message"), custom{Id: "E10", Retry: true})
+	fmt.Printf("custom:%+v\n", oops.GetMetadata[custom](err))
+	// Output:
+	// custom:{Id:E10 Retry:true}
+}
+
+func ExampleNew_withStandardOptionsAndClientCustomMetadata() {
+	type custom struct {
+		Id    string
+		Retry bool
+	}
+	err := oops.SetMetadata(
+		oops.New("this is a message",
+			oops.WithCause(errors.New("this is a cause")),
+			oops.WithKind(5),
+			oops.WithSeverity(2),
+		), custom{Id: "E10", Retry: true},
+	)
+	fmt.Println(err)
+	fmt.Println("code:", oops.GetMetadata[oops.Code](err))
+	fmt.Println("severity:", oops.GetMetadata[oops.Level](err))
+	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
+	fmt.Printf("custom:%+v\n", oops.GetMetadata[custom](err))
+	// Output:
+	// this is a message
+	// code: 5
+	// severity: 2
+	// cause: this is a cause
+	// custom:{Id:E10 Retry:true}
 }
