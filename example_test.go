@@ -6,7 +6,7 @@ import (
 	"github.com/piteego/oops"
 )
 
-func ExampleNew_standardOptions() {
+func ExampleNew() {
 	err := oops.New("this is a message",
 		oops.WithKind(5),
 		oops.WithSeverity(2),
@@ -23,7 +23,7 @@ func ExampleNew_standardOptions() {
 	// cause: this is a cause
 }
 
-func ExampleNew_withClientCustomMetadata() {
+func ExampleSetMetadata() {
 	type custom struct {
 		Id    string
 		Retry bool
@@ -34,7 +34,7 @@ func ExampleNew_withClientCustomMetadata() {
 	// "this is a message" with custom:{Id:E10 Retry:true}
 }
 
-func ExampleNew_withStandardOptionsAndClientCustomMetadata() {
+func ExampleSetMetadata_withOopsStandardOptions() {
 	type custom struct {
 		Id    string
 		Retry bool
