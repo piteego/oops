@@ -29,9 +29,9 @@ func ExampleNew_withClientCustomMetadata() {
 		Retry bool
 	}
 	err := oops.SetMetadata(errors.New("this is a message"), custom{Id: "E10", Retry: true})
-	fmt.Printf("custom:%+v\n", oops.GetMetadata[custom](err))
+	fmt.Printf("%q with custom:%+v\n", err, oops.GetMetadata[custom](err))
 	// Output:
-	// custom:{Id:E10 Retry:true}
+	// "this is a message" with custom:{Id:E10 Retry:true}
 }
 
 func ExampleNew_withStandardOptionsAndClientCustomMetadata() {
