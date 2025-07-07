@@ -1,5 +1,10 @@
 package oops
 
+import (
+	"github.com/piteego/oops/kind"
+	"github.com/piteego/oops/severity"
+)
+
 type Option func(error) error
 
 func New(msg string, options ...Option) error {
@@ -26,9 +31,9 @@ func (err *setError[_]) Error() string { return err.base.Error() }
 
 func (err *setError[_]) Unwrap() error { return err.base }
 
-type kindError = setError[Code]
+type kindError = setError[kind.Code]
 
-func WithKind(kind Code) Option {
+func WithKind(kind kind.Code) Option {
 	return func(e error) error {
 		switch err := e.(type) {
 		case *kindError:
@@ -41,7 +46,25 @@ func WithKind(kind Code) Option {
 	}
 }
 
-type causeError = setError[Cause]
+type severityError = setError[severity.Level]
+
+func WithSeverity(severity severity.Level) Option {
+	return func(e error) error {
+		switch err := e.(type) {
+		case *severityError:
+			err.data = severity
+			return err
+
+		default:
+			return &severityError{base: err, data: severity}
+		}
+	}
+}
+
+type (
+	Cause      error
+	causeError = setError[Cause]
+)
 
 func WithCause(cause Cause) Option {
 	return func(e error) error {
@@ -52,21 +75,6 @@ func WithCause(cause Cause) Option {
 
 		default:
 			return &causeError{base: err, data: cause}
-		}
-	}
-}
-
-type severityError = setError[Level]
-
-func WithSeverity(severity Level) Option {
-	return func(e error) error {
-		switch err := e.(type) {
-		case *severityError:
-			err.data = severity
-			return err
-
-		default:
-			return &severityError{base: err, data: severity}
 		}
 	}
 }

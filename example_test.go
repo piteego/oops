@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/piteego/oops"
+	"github.com/piteego/oops/kind"
+	"github.com/piteego/oops/severity"
 )
 
 func ExampleNew_withStandardOptions() {
@@ -13,8 +15,8 @@ func ExampleNew_withStandardOptions() {
 		oops.WithCause(errors.New("this is a cause")),
 	)
 	fmt.Println(err)
-	fmt.Println("code:", oops.GetMetadata[oops.Code](err))
-	fmt.Println("severity:", oops.GetMetadata[oops.Level](err))
+	fmt.Println("code:", oops.GetMetadata[kind.Code](err))
+	fmt.Println("severity:", oops.GetMetadata[severity.Level](err))
 	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
 	// Output:
 	// this is a message
@@ -46,8 +48,8 @@ func ExampleNew_withStandardOptionsAndClientMetadata() {
 		oops.WithMetadata(custom{Id: "E10", Retry: true}),
 	)
 	fmt.Println(err)
-	fmt.Println("code:", oops.GetMetadata[oops.Code](err))
-	fmt.Println("severity:", oops.GetMetadata[oops.Level](err))
+	fmt.Println("code:", oops.GetMetadata[kind.Code](err))
+	fmt.Println("severity:", oops.GetMetadata[severity.Level](err))
 	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
 	fmt.Printf("custom:%+v\n", oops.GetMetadata[custom](err))
 	// Output:
