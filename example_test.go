@@ -6,7 +6,7 @@ import (
 	"github.com/piteego/oops"
 )
 
-func ExampleNew() {
+func ExampleNew_withStandardOptions() {
 	err := oops.New("this is a message",
 		oops.WithKind(5),
 		oops.WithSeverity(2),
@@ -23,28 +23,27 @@ func ExampleNew() {
 	// cause: this is a cause
 }
 
-func ExampleSetMetadata() {
+func ExampleNew_withClientMetadata() {
 	type custom struct {
 		Id    string
 		Retry bool
 	}
-	err := oops.SetMetadata(errors.New("this is a message"), custom{Id: "E10", Retry: true})
+	err := oops.New("this is a message", oops.WithMetadata(custom{Id: "E10", Retry: true}))
 	fmt.Printf("%q with custom:%+v\n", err, oops.GetMetadata[custom](err))
 	// Output:
 	// "this is a message" with custom:{Id:E10 Retry:true}
 }
 
-func ExampleSetMetadata_withOopsStandardOptions() {
+func ExampleNew_withStandardOptionsAndClientMetadata() {
 	type custom struct {
 		Id    string
 		Retry bool
 	}
-	err := oops.SetMetadata(
-		oops.New("this is a message",
-			oops.WithCause(errors.New("this is a cause")),
-			oops.WithKind(5),
-			oops.WithSeverity(2),
-		), custom{Id: "E10", Retry: true},
+	err := oops.New("this is a message",
+		oops.WithCause(errors.New("this is a cause")),
+		oops.WithKind(5),
+		oops.WithSeverity(2),
+		oops.WithMetadata(custom{Id: "E10", Retry: true}),
 	)
 	fmt.Println(err)
 	fmt.Println("code:", oops.GetMetadata[oops.Code](err))

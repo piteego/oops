@@ -1,6 +1,8 @@
 package oops
 
-func New(msg string, options ...func(error) error) error {
+type Option func(error) error
+
+func New(msg string, options ...Option) error {
 	var err error = &msgError{msg: msg}
 	for i := range options {
 		err = options[i](err)
@@ -26,7 +28,7 @@ func (err *setError[_]) Unwrap() error { return err.base }
 
 type kindError = setError[Code]
 
-func WithKind(kind Code) func(error) error {
+func WithKind(kind Code) Option {
 	return func(e error) error {
 		switch err := e.(type) {
 		case *kindError:
@@ -41,7 +43,7 @@ func WithKind(kind Code) func(error) error {
 
 type causeError = setError[Cause]
 
-func WithCause(cause Cause) func(error) error {
+func WithCause(cause Cause) Option {
 	return func(e error) error {
 		switch err := e.(type) {
 		case *causeError:
@@ -56,7 +58,7 @@ func WithCause(cause Cause) func(error) error {
 
 type severityError = setError[Level]
 
-func WithSeverity(severity Level) func(error) error {
+func WithSeverity(severity Level) Option {
 	return func(e error) error {
 		switch err := e.(type) {
 		case *severityError:
@@ -66,5 +68,11 @@ func WithSeverity(severity Level) func(error) error {
 		default:
 			return &severityError{base: err, data: severity}
 		}
+	}
+}
+
+func WithMetadata[D data](meta D) Option {
+	return func(err error) error {
+		return &setError[D]{base: err, data: meta}
 	}
 }
