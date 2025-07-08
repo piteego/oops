@@ -1,6 +1,8 @@
 package oops
 
-import "github.com/piteego/oops/internal"
+import (
+	"github.com/piteego/oops/internal"
+)
 
 type metadata interface{ mustBeEmbedToBeMetadata() }
 
@@ -14,12 +16,12 @@ func With[T metadata](metadata T) metaOption {
 			err.Data = metadata
 			return err
 
-		case *Error[T]:
+		case *metaError[T]:
 			err.meta = metadata
 			return err
 
 		default:
-			return &Error[T]{source: err, meta: metadata}
+			return &metaError[T]{source: err, meta: metadata}
 		}
 	}
 }

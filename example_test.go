@@ -33,23 +33,29 @@ func ExampleNew_withPredefinedOptions() {
 func ExampleNew_withCustomMetadata() {
 	err := oops.New("an error", oops.With(example.Metadata{Id: "E109", Retry: true}))
 	metadata := oops.Unwrap[example.Metadata](err)
-	fmt.Printf("%q with custom metadata:{Id: %q, Retry: %v}", err, metadata.Id, metadata.Retry)
+	fmt.Printf("%q with custom metadata {Id: %q, Retry: %v}", err, metadata.Id, metadata.Retry)
 	// Output:
-	// "an error" with custom metadata:{Id: "E109", Retry: true}
+	// "an error" with custom metadata {Id: "E109", Retry: true}
 }
 
 func ExampleWith() {
-	err := oops.With(
-		example.Metadata{Id: "E109", Retry: true},
-	)(
+	err1 := oops.With(example.Metadata{Id: "E109", Retry: true})(
 		oops.New("an error", kind.Code(2)),
 	)
-	metadata := oops.Unwrap[example.Metadata](err)
-	fmt.Printf("%q with code: %d, and custom metadata:{Id: %q, Retry: %v}",
-		err,
-		oops.KindOf(err),
-		metadata.Id, metadata.Retry,
+	metadata1 := oops.Unwrap[example.Metadata](err1)
+	fmt.Printf("%q with code: %d, and custom metadata {Id: %q, Retry: %v}\n",
+		err1,
+		kind.Of(err1),
+		metadata1.Id, metadata1.Retry,
+	)
+	err2 := oops.New("an error", oops.With(example.MetadataAndCode{Code: 2, Retry: true}))
+	metadata2 := oops.Unwrap[example.MetadataAndCode](err2)
+	fmt.Printf("%q with code: %d, and custom metadata {Code: %d, Retry: %v}\n",
+		err1,
+		kind.Of(err2),
+		metadata2.Code, metadata2.Retry,
 	)
 	// Output:
-	// "an error" with code: 2, and custom metadata:{Id: "E109", Retry: true}
+	// "an error" with code: 2, and custom metadata {Id: "E109", Retry: true}
+	// "an error" with code: 2, and custom metadata {Code: 2, Retry: true}
 }
