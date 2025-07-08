@@ -4,58 +4,52 @@ import (
 	"errors"
 	"fmt"
 	"github.com/piteego/oops"
+	"github.com/piteego/oops/example"
 	"github.com/piteego/oops/kind"
 	"github.com/piteego/oops/severity"
 )
 
-func ExampleNew_withStandardOptions() {
-	err := oops.New("this is a message",
-		oops.WithKind(5),
-		oops.WithSeverity(2),
-		oops.WithCause(errors.New("this is a cause")),
-	)
-	fmt.Println(err)
-	fmt.Println("code:", oops.GetMetadata[kind.Code](err))
-	fmt.Println("severity:", oops.GetMetadata[severity.Level](err))
-	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
+func ExampleNew_withPredefinedOptions() {
+	errs := []error{
+		errors.New("just use errors.New in case of no options"),
+		oops.New("an error with kind of 3!", kind.Code(3)),
+		oops.New("an error with severity level of 2!", severity.Level(2)),
+		oops.New(`an error caused by "a cause error"`, oops.CausedBy{Error: example.ErrorCause}),
+		oops.New(`an error with {kind:3, level: 2, cause: "a cause error"}`,
+			oops.Standard{Code: 3, Level: 2, Cause: example.ErrorCause},
+		),
+	}
+	for i := range errs {
+		fmt.Println(errs[i])
+	}
 	// Output:
-	// this is a message
-	// code: 5
-	// severity: 2
-	// cause: this is a cause
+	// just use errors.New in case of no options
+	// an error with kind of 3!
+	// an error with severity level of 2!
+	// an error caused by "a cause error"
+	// an error with {kind:3, level: 2, cause: "a cause error"}
 }
 
-func ExampleNew_withClientMetadata() {
-	type custom struct {
-		Id    string
-		Retry bool
-	}
-	err := oops.New("this is a message", oops.WithMetadata(custom{Id: "E10", Retry: true}))
-	fmt.Printf("%q with custom:%+v\n", err, oops.GetMetadata[custom](err))
+func ExampleNew_withCustomMetadata() {
+	err := oops.New("an error", oops.With(example.Metadata{Id: "E109", Retry: true}))
+	metadata := oops.Unwrap[example.Metadata](err)
+	fmt.Printf("%q with custom metadata:{Id: %q, Retry: %v}", err, metadata.Id, metadata.Retry)
 	// Output:
-	// "this is a message" with custom:{Id:E10 Retry:true}
+	// "an error" with custom metadata:{Id: "E109", Retry: true}
 }
 
-func ExampleNew_withStandardOptionsAndClientMetadata() {
-	type custom struct {
-		Id    string
-		Retry bool
-	}
-	err := oops.New("this is a message",
-		oops.WithCause(errors.New("this is a cause")),
-		oops.WithKind(5),
-		oops.WithSeverity(2),
-		oops.WithMetadata(custom{Id: "E10", Retry: true}),
+func ExampleWith() {
+	err := oops.With(
+		example.Metadata{Id: "E109", Retry: true},
+	)(
+		oops.New("an error", kind.Code(2)),
 	)
-	fmt.Println(err)
-	fmt.Println("code:", oops.GetMetadata[kind.Code](err))
-	fmt.Println("severity:", oops.GetMetadata[severity.Level](err))
-	fmt.Println("cause:", oops.GetMetadata[oops.Cause](err))
-	fmt.Printf("custom:%+v\n", oops.GetMetadata[custom](err))
+	metadata := oops.Unwrap[example.Metadata](err)
+	fmt.Printf("%q with code: %d, and custom metadata:{Id: %q, Retry: %v}",
+		err,
+		oops.KindOf(err),
+		metadata.Id, metadata.Retry,
+	)
 	// Output:
-	// this is a message
-	// code: 5
-	// severity: 2
-	// cause: this is a cause
-	// custom:{Id:E10 Retry:true}
+	// "an error" with code: 2, and custom metadata:{Id: "E109", Retry: true}
 }

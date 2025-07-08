@@ -1,86 +1,27 @@
 package oops
 
 import (
-	"github.com/piteego/oops/kind"
-	"github.com/piteego/oops/severity"
+	"errors"
+	"github.com/piteego/oops/internal"
 )
 
-type Option func(error) error
-
-func New(msg string, options ...Option) error {
-	var err error = &msgError{msg: msg}
-	for i := range options {
-		err = options[i](err)
-	}
-	return err
-}
-
-type msgError struct{ msg string }
-
-func (err *msgError) Error() string { return err.msg }
-
-type (
-	data             = any
-	setError[D data] struct {
-		base error
-		data D
-	}
-)
-
-func (err *setError[_]) Error() string { return err.base.Error() }
-
-func (err *setError[_]) Unwrap() error { return err.base }
-
-type kindError = setError[kind.Code]
-
-func WithKind(kind kind.Code) Option {
-	return func(e error) error {
-		switch err := e.(type) {
-		case *kindError:
-			err.data = kind
-			return err
-
-		default:
-			return &kindError{base: err, data: kind}
+func New[O interface{ internal.Option | metaOption }](msg string, option O) error {
+	switch opt := any(option).(type) {
+	case metaOption:
+		if opt == nil {
+			return errors.New(msg)
 		}
+		return opt(errors.New(msg))
+
+	default:
+		return &internal.Error[O]{Msg: msg, Data: option}
 	}
 }
 
-type severityError = setError[severity.Level]
-
-func WithSeverity(severity severity.Level) Option {
-	return func(e error) error {
-		switch err := e.(type) {
-		case *severityError:
-			err.data = severity
-			return err
-
-		default:
-			return &severityError{base: err, data: severity}
-		}
-	}
+type Error[T any] struct {
+	source error
+	meta   T
 }
 
-type (
-	Cause      error
-	causeError = setError[Cause]
-)
-
-func WithCause(cause Cause) Option {
-	return func(e error) error {
-		switch err := e.(type) {
-		case *causeError:
-			err.data = cause
-			return err
-
-		default:
-			return &causeError{base: err, data: cause}
-		}
-	}
-}
-
-func WithMetadata[D data](meta D) Option {
-	return func(err error) error {
-		return &setError[D]{base: err, data: meta}
-	}
-}
+func (err *Error[_]) Error() string { return err.source.Error() }
+func (err *Error[T]) Unwrap() error { return err.source }

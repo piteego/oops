@@ -1,16 +1,9 @@
 package example
 
-import (
-	"fmt"
-	"github.com/piteego/oops/v1_0"
-)
+import "github.com/piteego/oops"
 
 type Metadata struct {
-	v1_0.Metadata
-	Code  int
+	oops.Metadata
+	Id    string
 	Retry bool
-}
-
-func (m Metadata) String() string {
-	return fmt.Sprintf("{Code: %d, Retry: %t}", m.Code, m.Retry)
 }

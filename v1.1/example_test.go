@@ -3,7 +3,7 @@ package v1_1_test
 import (
 	"errors"
 	"fmt"
-	"github.com/piteego/oops/v1_1"
+	"github.com/piteego/oops/v1.1"
 )
 
 func ExampleNew() {

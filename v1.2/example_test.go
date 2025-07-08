@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/piteego/oops/example"
-	"github.com/piteego/oops/v1_2"
+	"github.com/piteego/oops/v1.2"
 )
 
 func ExampleNew() {
