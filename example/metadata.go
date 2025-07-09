@@ -3,6 +3,7 @@ package example
 import (
 	"github.com/piteego/oops"
 	"github.com/piteego/oops/kind"
+	"github.com/piteego/oops/severity"
 )
 
 type Metadata struct {
@@ -11,10 +12,9 @@ type Metadata struct {
 	Retry bool
 }
 
-type MetadataAndCode struct {
+type MetaStandard struct {
 	oops.Metadata
-	Code  kind.Code
+	kind.Code
+	severity.Level
 	Retry bool
 }
-
-func (m MetadataAndCode) Kind() (kind.Code, bool) { return m.Code, true }

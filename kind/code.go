@@ -1,17 +1,19 @@
 package kind
 
-const (
-	Unknown Code = 0
-)
+var _ Reader = Unknown
 
-type Code int
+const Unknown Code = -1
 
-func (c Code) Is(target Code, or ...Code) bool {
-	if c == target {
+type Code int8
+
+func (c Code) Kind() (Code, bool) { return c, true }
+
+func Is(code, target Code, or ...Code) bool {
+	if code == target {
 		return true
 	}
 	for i := range or {
-		if c == or[i] {
+		if code == or[i] {
 			return true
 		}
 	}

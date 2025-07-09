@@ -48,8 +48,8 @@ func ExampleWith() {
 		kind.Of(err1),
 		metadata1.Id, metadata1.Retry,
 	)
-	err2 := oops.New("an error", oops.With(example.MetadataAndCode{Code: 2, Retry: true}))
-	metadata2 := oops.Unwrap[example.MetadataAndCode](err2)
+	err2 := oops.New("an error", oops.With(example.MetaStandard{Code: 2, Retry: true}))
+	metadata2 := oops.Unwrap[example.MetaStandard](err2)
 	fmt.Printf("%q with code: %d, and custom metadata {Code: %d, Retry: %v}\n",
 		err1,
 		kind.Of(err2),
