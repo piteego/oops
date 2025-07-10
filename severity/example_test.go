@@ -15,17 +15,19 @@ func ExampleIs() {
 
 func ExampleOf() {
 	errs := []error{
-		oops.New("an error", oops.With(example.Metadata{Retry: true})),
-		oops.New("an error", severity.Level(1)),
-		oops.New("an error", oops.Standard{Level: 2}),
-		oops.New("an error", oops.With(example.MetaStandard{Level: 3})),
+		example.BuiltinErr,
+		oops.New("an oops meta error", oops.With(example.Metadata{Retry: true})),
+		oops.New("an oops level error", severity.Level(1)),
+		oops.New("an oops standard error", oops.Standard{Level: 2}),
+		oops.New("an oops meta standard error", oops.With(example.MetaStandard{Level: 3})),
 	}
 	for i := range errs {
 		fmt.Printf("%q with severity level of %d\n", errs[i], severity.Of(errs[i]))
 	}
 	// Output:
-	// "an error" with severity level of -1
-	// "an error" with severity level of 1
-	// "an error" with severity level of 2
-	// "an error" with severity level of 3
+	// "a builtin error" with severity level of -1
+	// "an oops meta error" with severity level of -1
+	// "an oops level error" with severity level of 1
+	// "an oops standard error" with severity level of 2
+	// "an oops meta standard error" with severity level of 3
 }

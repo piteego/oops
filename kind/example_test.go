@@ -15,17 +15,19 @@ func ExampleIs() {
 
 func ExampleOf() {
 	errs := []error{
-		oops.New("an error", oops.With(example.Metadata{Retry: true})),
-		oops.New("an error", kind.Code(1)),
-		oops.New("an error", oops.Standard{Code: 2}),
-		oops.New("an error", oops.With(example.MetaStandard{Code: 3})),
+		example.BuiltinErr,
+		oops.New("an oops meta error", oops.With(example.Metadata{Retry: true})),
+		oops.New("an oops kind error", kind.Code(1)),
+		oops.New("an oops standard error", oops.Standard{Code: 2}),
+		oops.New("an oops meta standard error", oops.With(example.MetaStandard{Code: 3})),
 	}
 	for i := range errs {
 		fmt.Printf("%q with kind of %d\n", errs[i], kind.Of(errs[i]))
 	}
 	// Output:
-	// "an error" with kind of -1
-	// "an error" with kind of 1
-	// "an error" with kind of 2
-	// "an error" with kind of 3
+	// "a builtin error" with kind of -1
+	// "an oops meta error" with kind of -1
+	// "an oops kind error" with kind of 1
+	// "an oops standard error" with kind of 2
+	// "an oops meta standard error" with kind of 3
 }
