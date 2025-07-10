@@ -40,8 +40,6 @@ func Standard(code kind.Code, level severity.Level, cause error) internal.AllOpt
 	}
 }
 
-type (
-	CausedBy = internal.CauseOption
-)
+func CausedBy(err error) internal.Cause { return internal.Cause{Error: err} }
 
 func (Metadata) mustBeEmbedToBeMetadata() {}

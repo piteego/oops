@@ -7,10 +7,10 @@ import (
 
 type (
 	Option interface {
-		kind.Code | severity.Level | CauseOption | AllOptions
+		kind.Code | severity.Level | Cause | AllOptions
 	}
-	CauseOption struct{ Error error }
-	AllOptions  struct {
+	Cause      struct{ Error error }
+	AllOptions struct {
 		Code  kind.Code
 		Level severity.Level
 		Cause error
