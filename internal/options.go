@@ -16,3 +16,6 @@ type (
 		Cause error
 	}
 )
+
+func (opt AllOptions) Kind() kind.Code          { return opt.Code }
+func (opt AllOptions) Severity() severity.Level { return opt.Level }

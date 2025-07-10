@@ -14,10 +14,9 @@ func (err *Error[_]) Error() string { return err.Msg }
 
 func (err *Error[_]) Kind() kind.Code {
 	switch data := any(err.Data).(type) {
-	case kind.Code:
-		return data
-	case AllOptions:
-		return data.Code
+	case kind.Reader:
+		return data.Kind()
+
 	default:
 		return kind.Unknown
 	}
@@ -25,10 +24,8 @@ func (err *Error[_]) Kind() kind.Code {
 
 func (err *Error[_]) Severity() severity.Level {
 	switch data := any(err.Data).(type) {
-	case severity.Level:
-		return data
-	case AllOptions:
-		return data.Level
+	case severity.Reader:
+		return data.Severity()
 	default:
 		return severity.Unknown
 	}
