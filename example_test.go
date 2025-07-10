@@ -75,7 +75,8 @@ func ExampleNew_withCauseNil() {
 
 func ExampleNew_withStandardOptions() {
 	errs := []error{
-		oops.New("an error with", oops.Standard{Code: 3, Level: 5, CausedBy: example.ErrorCause}),
+		oops.New("an error with", oops.Standard{Code: kind.NotFound, Level: 5, CausedBy: example.OsErrNotExist}),
+		oops.New("an error with", oops.Standard{Code: kind.Duplication, Level: 1, CausedBy: example.GormErrDuplicatedKey}),
 		oops.New("an error with", oops.Standard{Code: -1, Level: 6, CausedBy: example.ErrorCause}),
 	}
 	for i := range errs {
@@ -84,7 +85,8 @@ func ExampleNew_withStandardOptions() {
 		)
 	}
 	// Output:
-	// ✓ an error with {kind: "Unauthorized Error", level: "Informational", cause: "a cause error"}
+	// ✓ an error with {kind: "Not Found Error", level: "Informational", cause: "file does not exist"}
+	// ✓ an error with {kind: "Duplication Error", level: "Critical", cause: "gorm duplicated key"}
 	// ✓ an error with {kind: "Unknown Error", level: "Unknown", cause: "a cause error"}
 }
 
