@@ -1,11 +1,14 @@
 package kind
 
-type Reader interface{ Kind() Code }
+type Reader interface{ Kind(sanitize bool) Code }
 
 func Of(err error) Code {
+	if err == nil {
+		return Unknown
+	}
 	if implemented, ok := err.(Reader); ok {
-		if implemented != nil {
-			return implemented.Kind()
+		if level := implemented.Kind(true); level != Unknown {
+			return level
 		}
 	}
 	if implemented, ok := err.(interface{ Unwrap() error }); ok {
