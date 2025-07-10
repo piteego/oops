@@ -18,7 +18,7 @@ func ExampleOf() {
 		example.BuiltinErr,
 		oops.New("an oops meta error", oops.With(example.Metadata{Retry: true})),
 		oops.New("an oops level error", severity.Level(1)),
-		oops.New("an oops standard error", oops.Standard{Level: 2}),
+		oops.New("an oops standard error", oops.Standard(2, 2, nil)),
 		oops.New("an oops meta standard error", oops.With(example.MetaStandard{Level: 3})),
 	}
 	for i := range errs {

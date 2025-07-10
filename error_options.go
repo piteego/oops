@@ -2,9 +2,15 @@ package oops
 
 import (
 	"github.com/piteego/oops/internal"
+	"github.com/piteego/oops/kind"
+	"github.com/piteego/oops/severity"
 )
 
-type metadata interface{ mustBeEmbedToBeMetadata() }
+type (
+	metadata   interface{ mustBeEmbedToBeMetadata() }
+	Metadata   struct{}
+	metaOption func(error) error
+)
 
 func With[T metadata](metadata T) metaOption {
 	return func(e error) error {
@@ -26,11 +32,16 @@ func With[T metadata](metadata T) metaOption {
 	}
 }
 
+func Standard(code kind.Code, level severity.Level, cause error) internal.AllOptions {
+	return internal.AllOptions{
+		Code:  code,
+		Level: level,
+		Cause: cause,
+	}
+}
+
 type (
-	CausedBy   = internal.CauseOption
-	Standard   = internal.AllOptions
-	Metadata   struct{}
-	metaOption func(error) error
+	CausedBy = internal.CauseOption
 )
 
 func (Metadata) mustBeEmbedToBeMetadata() {}

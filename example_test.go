@@ -16,7 +16,7 @@ func ExampleNew_withPredefinedOptions() {
 		oops.New("an error with severity level of 2!", severity.Level(2)),
 		oops.New(`an error caused by "a cause error"`, oops.CausedBy{Error: example.ErrorCause}),
 		oops.New(`an error with {kind:3, level: 2, cause: "a cause error"}`,
-			oops.Standard{Code: 3, Level: 2, Cause: example.ErrorCause},
+			oops.Standard(3, 2, example.ErrorCause),
 		),
 	}
 	for i := range errs {
