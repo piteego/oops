@@ -6,7 +6,7 @@ const Unknown Code = -1
 
 type Code int8
 
-func (c Code) Kind() (Code, bool) { return c, true }
+func (c Code) Kind() Code { return c }
 
 func Is(code, target Code, or ...Code) bool {
 	if code == target {

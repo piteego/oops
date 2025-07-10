@@ -15,7 +15,7 @@ func New[D interface{ internal.Option | metaOption }](msg string, data D) error 
 		}
 		return opt(errors.New(msg))
 
-	default:
+	default: // unreachable!
 		return &internal.Error[D]{Msg: msg, Data: data}
 	}
 }
@@ -27,34 +27,30 @@ type metaError[T any] struct {
 
 func (err *metaError[_]) Error() string { return err.source.Error() }
 func (err *metaError[T]) Unwrap() error { return err.source }
-func (err *metaError[T]) Kind() (kind.Code, bool) {
+func (err *metaError[T]) Kind() kind.Code {
 	switch meta := any(err.meta).(type) {
 	case kind.Code:
-		return meta, true
+		return meta
 
 	case kind.Reader:
 		return meta.Kind()
 
 	default:
 		if code := kind.Of(err.source); code != kind.Unknown {
-			return code, true
+			return code
 		}
-		return kind.Unknown, false
+		return kind.Unknown
 	}
 }
-
-func (err *metaError[T]) Severity() (severity.Level, bool) {
+func (err *metaError[T]) Severity() severity.Level {
 	switch meta := any(err.meta).(type) {
 	case severity.Level:
-		return meta, true
+		return meta
 
 	case severity.Reader:
 		return meta.Severity()
 
 	default:
-		if level := severity.Of(err.source); level != severity.Unknown {
-			return level, true
-		}
-		return severity.Unknown, false
+		return severity.Of(err.source)
 	}
 }

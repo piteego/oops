@@ -2,11 +2,11 @@ package severity
 
 var _ Reader = Unknown
 
-const Unknown Level = 0
+const Unknown Level = -1
 
 type Level int
 
-func (l Level) Severity() (Level, bool) { return l, true }
+func (l Level) Severity() Level { return l }
 
 func Is(level, target Level, or ...Level) bool {
 	if level == target {

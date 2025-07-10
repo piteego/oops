@@ -16,7 +16,3 @@ type (
 		Cause error
 	}
 )
-
-func (std AllOptions) GetCode() kind.Code       { return std.Code }
-func (std AllOptions) GetCause() error          { return std.Cause }
-func (std AllOptions) GetLevel() severity.Level { return std.Level }

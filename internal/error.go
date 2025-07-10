@@ -12,35 +12,24 @@ type Error[T any] struct {
 
 func (err *Error[_]) Error() string { return err.Msg }
 
-func (err *Error[_]) Kind() (kind.Code, bool) {
-	switch d := any(err.Data).(type) {
+func (err *Error[_]) Kind() kind.Code {
+	switch data := any(err.Data).(type) {
 	case kind.Code:
-		return d, true
+		return data
 	case AllOptions:
-		return d.Code, true
+		return data.Code
 	default:
-		return kind.Unknown, false
+		return kind.Unknown
 	}
 }
 
-func (err *Error[_]) Severity() (severity.Level, bool) {
-	switch d := any(err.Data).(type) {
+func (err *Error[_]) Severity() severity.Level {
+	switch data := any(err.Data).(type) {
 	case severity.Level:
-		return d, true
+		return data
 	case AllOptions:
-		return d.Level, true
+		return data.Level
 	default:
-		return severity.Unknown, false
-	}
-}
-
-func (err *Error[_]) CausedBy() (error, bool) {
-	switch d := any(err.Data).(type) {
-	case CauseOption:
-		return d.Error, true
-	case AllOptions:
-		return d.Cause, true
-	default:
-		return nil, false
+		return severity.Unknown
 	}
 }
