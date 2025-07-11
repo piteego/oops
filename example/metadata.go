@@ -1,31 +1,31 @@
 package example
 
 import (
-	"github.com/piteego/oops"
 	"github.com/piteego/oops/kind"
 	"github.com/piteego/oops/severity"
+	"github.com/piteego/oops/v1.0"
 )
 
 type Metadata struct {
-	oops.Metadata
+	v1_0.Metadata
 	Id    string
 	Retry bool
 }
 
 type MetaKind struct {
-	oops.Metadata
+	v1_0.Metadata
 	kind.Code
 	Retry bool
 }
 
 type MetaSeverity struct {
-	oops.Metadata
+	v1_0.Metadata
 	severity.Level
 	Retry bool
 }
 
 type MetaKindAndSeverity struct {
-	oops.Metadata
+	v1_0.Metadata
 	kind.Code
 	severity.Level
 	Retry bool
