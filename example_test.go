@@ -67,7 +67,7 @@ func ExampleNew_withCauseNil() {
 			fmt.Printf("✗ panic: %v\n", rec)
 		}
 	}()
-	_ = oops.New("an error with cause of nil will panic:", oops.CausedBy(nil))
+	_ = oops.New("✗ an error with cause of nil will panic:", oops.CausedBy(nil))
 	// Output:
 	// ✗ panic: trying to set nil cause
 
@@ -93,9 +93,9 @@ func ExampleNew_withStandardOptions() {
 func ExampleNew_withCustomMetadata() {
 	err := oops.New("an error", oops.Append(example.Metadata{Id: "E109", Retry: true}))
 	metadata := oops.Unwrap[example.Metadata](err)
-	fmt.Printf("%q with custom metadata {Id: %q, Retry: %v}", err, metadata.Id, metadata.Retry)
+	fmt.Printf("✓ %s with custom metadata {Id: %q, Retry: %v}", err, metadata.Id, metadata.Retry)
 	// Output:
-	// "an error" with custom metadata {Id: "E109", Retry: true}
+	// ✓ an error with custom metadata {Id: "E109", Retry: true}
 }
 
 func ExampleAppend_directlyThenUnwrap() {

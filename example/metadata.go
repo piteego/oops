@@ -18,6 +18,12 @@ type MetaKind struct {
 	Retry bool
 }
 
+type MetaSeverity struct {
+	oops.Metadata
+	severity.Level
+	Retry bool
+}
+
 type MetaKindAndSeverity struct {
 	oops.Metadata
 	kind.Code
