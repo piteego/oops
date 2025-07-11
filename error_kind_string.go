@@ -1,6 +1,6 @@
-package kind
+package oops
 
-var stringOf = map[Code]string{
+var kindString = map[Kind]string{
 	Internal:      "Internal Server Error",
 	Unprocessable: "Unprocessable",
 	Validation:    "Validation Error",
@@ -10,8 +10,8 @@ var stringOf = map[Code]string{
 	Duplication:   "Duplication Error",
 }
 
-func (c Code) String() string {
-	if str, exists := stringOf[c]; exists {
+func (k Kind) String() string {
+	if str, exists := kindString[k]; exists {
 		return str
 	}
 	return "Unknown Error"

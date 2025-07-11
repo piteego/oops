@@ -1,6 +1,6 @@
-package severity
+package oops
 
-var stringOf = map[Level]string{
+var levelString = map[Level]string{
 	Critical:      "Critical",
 	High:          "High",
 	Medium:        "Medium",
@@ -9,7 +9,7 @@ var stringOf = map[Level]string{
 }
 
 func (l Level) String() string {
-	if str, exists := stringOf[l]; exists {
+	if str, exists := levelString[l]; exists {
 		return str
 	}
 	return "Unknown"

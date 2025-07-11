@@ -1,8 +1,8 @@
-package severity
+package oops
 
 const (
-	// Unknown represents an unspecified or invalid severity [Level].
-	Unknown Level = iota
+	// UnknownSeverityLevel represents an unspecified or invalid severity [Level].
+	UnknownSeverityLevel Level = iota
 	// Critical (SEV1, Severity 1):
 	//
 	// represents a major incident with very high impact, potentially causing significant business disruption or harm
@@ -24,7 +24,7 @@ const (
 	//An event that is logged for informational purposes, often with no immediate
 	Informational
 
-	start, end = Critical, Informational
+	levelStart, levelEnd = Critical, Informational
 )
 
 // Level of severity help determine the extent of damage or disruption caused by an incident or vulnerability.
@@ -46,6 +46,8 @@ const (
 // An invalid Severity will be represented as [Unknown].
 type Level uint8
 
+func (Level) errorMetadata() {}
+
 func (l Level) Severity(sanitize bool) Level {
 	if !sanitize {
 		return l
@@ -53,10 +55,10 @@ func (l Level) Severity(sanitize bool) Level {
 	return l.Sanitize()
 }
 
-// Sanitize returns a valid [Level] level or [Unknown] if the receiver is outside the valid range.
+// Sanitize returns a valid [Level] level or unknown severity level if the receiver is outside the valid range.
 func (l Level) Sanitize() Level {
-	if l < start || l > end {
-		return Unknown
+	if l < levelStart || l > levelEnd {
+		return UnknownSeverityLevel
 	}
 	return l
 }
@@ -64,8 +66,25 @@ func (l Level) Sanitize() Level {
 // Valid reports whether the [Level] level is within the defined range.
 // Returns true for values between [Critical] and [Informational] (inclusive).
 func (l Level) Valid() bool {
-	if l < start || l > end {
+	if l < levelStart || l > levelEnd {
 		return false
 	}
 	return true
+}
+
+type levelReader interface{ Severity(sanitize bool) Level }
+
+func LevelOf(err error) Level {
+	if err == nil {
+		return UnknownSeverityLevel
+	}
+	if implemented, ok := err.(levelReader); ok {
+		if level := implemented.Severity(true); level != UnknownSeverityLevel {
+			return level
+		}
+	}
+	if implemented, ok := err.(interface{ Unwrap() error }); ok {
+		return LevelOf(implemented.Unwrap())
+	}
+	return UnknownSeverityLevel
 }
